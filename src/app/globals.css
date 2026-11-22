@@ -1,0 +1,298 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+
+/* Reset Tailwind's default scales so only token values exist. */
+@theme {
+  --color-*: initial;
+  --spacing-*: initial;
+  --text-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --font-*: initial;
+  --breakpoint-*: initial;
+  --breakpoint-sm: 30rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 90rem;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-line-control: var(--line-control);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-press: var(--accent-press);
+  --color-on-accent: var(--on-accent);
+  --color-accent-text: var(--accent-text);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-success-line: var(--success-line);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-line: var(--danger-line);
+  --color-danger-solid: var(--danger-solid);
+  --color-on-danger: var(--on-danger);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-line: var(--warning-line);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-info-line: var(--info-line);
+  --color-focus: var(--focus);
+  --color-transparent: transparent;
+
+  --spacing-0: 0px;
+  --spacing-px: 1px;
+  --spacing-1: var(--sp-1);
+  --spacing-2: var(--sp-2);
+  --spacing-3: var(--sp-3);
+  --spacing-4: var(--sp-4);
+  --spacing-6: var(--sp-6);
+  --spacing-8: var(--sp-8);
+  --spacing-12: var(--sp-12);
+  --spacing-16: var(--sp-16);
+  --spacing-24: var(--sp-24);
+  --spacing-touch: var(--touch);
+  --spacing-gutter: var(--gutter);
+
+  --text-12: var(--fs-12);
+  --text-12--line-height: 1.5;
+  --text-12--letter-spacing: 0.02em;
+  --text-14: var(--fs-14);
+  --text-14--line-height: 1.55;
+  --text-16: var(--fs-16);
+  --text-16--line-height: 1.6;
+  --text-20: var(--fs-20);
+  --text-20--line-height: 1.4;
+  --text-24: var(--fs-24);
+  --text-24--line-height: 1.25;
+  --text-24--letter-spacing: -0.01em;
+  --text-32: var(--fs-32);
+  --text-32--line-height: 1.15;
+  --text-32--letter-spacing: -0.015em;
+  --text-44: var(--fs-44);
+  --text-44--line-height: 1.1;
+  --text-44--letter-spacing: -0.02em;
+  --text-60: var(--fs-60);
+  --text-60--line-height: 1.05;
+  --text-60--letter-spacing: -0.025em;
+
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-full: 9999px;
+  --shadow-floating: var(--elev-floating);
+
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-code);
+
+  --container-content: var(--content-max);
+  --container-measure: var(--measure);
+  --container-dialog: var(--w-dialog);
+  --container-dialog-lg: var(--w-dialog-lg);
+  --container-toast: var(--w-toast);
+  --container-tip: var(--w-tip);
+  --container-form: var(--w-form);
+  --container-sidebar: var(--w-sidebar);
+
+  --ease-out: var(--easing-out);
+  --ease-in: var(--easing-in);
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--line);
+  }
+  html {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    scroll-padding-top: calc(var(--header-h) + var(--sp-4));
+  }
+  body {
+    min-height: 100dvh;
+    font-size: var(--fs-16);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  ::selection {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: var(--r-sm);
+  }
+  a {
+    color: inherit;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .num {
+    font-family: var(--font-code);
+    font-variant-numeric: tabular-nums slashed-zero;
+    font-feature-settings: "tnum" 1, "zero" 1;
+  }
+  .eyebrow {
+    font-size: var(--fs-12);
+    line-height: 1.4;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .prose-measure {
+    max-width: var(--measure);
+  }
+  .link {
+    text-decoration: underline;
+    text-decoration-color: var(--line-control);
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    transition: text-decoration-color var(--dur-micro) var(--easing-out), color var(--dur-micro) var(--easing-out);
+  }
+  .link:hover {
+    text-decoration-color: currentColor;
+  }
+
+  /* Signature motif: the sight line. A 1px rule that starts with a small open square. */
+  .sightline {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+  }
+  .sightline::before {
+    content: "";
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border: 1px solid var(--line-control);
+  }
+  .sightline::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .sightline[data-tone="accent"]::before {
+    border-color: var(--accent);
+    background: var(--accent);
+  }
+
+  /* Statement rows: label, dotted leader, value. */
+  .leader {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+  }
+  .leader > dt {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: baseline;
+    gap: var(--sp-2);
+    min-width: 0;
+  }
+  .leader > dt::after {
+    content: "";
+    flex: 1;
+    min-width: var(--sp-4);
+    border-bottom: 1px dotted var(--line-strong);
+    transform: translateY(-4px);
+  }
+  .leader > dd {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface-2) 0%, var(--surface-3) 50%, var(--surface-2) 100%);
+    background-size: 200% 100%;
+    animation: sp-shimmer 1.4s linear infinite;
+    border-radius: var(--r-sm);
+  }
+  @keyframes sp-shimmer {
+    from {
+      background-position: 100% 0;
+    }
+    to {
+      background-position: -100% 0;
+    }
+  }
+  @keyframes sp-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes sp-sheet-in {
+    from {
+      transform: translateY(16px);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+  @keyframes sp-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes sp-scan {
+    from {
+      transform: translate(0, -50%);
+    }
+    to {
+      transform: translate(calc(var(--w-form) - 8px), -50%);
+    }
+  }
+  .animate-in {
+    animation: sp-in var(--dur-element) var(--easing-out) both;
+  }
+  .safe-bottom {
+    padding-bottom: max(var(--sp-4), env(safe-area-inset-bottom));
+  }
+}

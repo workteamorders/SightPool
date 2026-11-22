@@ -1,0 +1,145 @@
+/*
+ * Design tokens. The single source for every visual value. Components use these through Tailwind theme names
+ * (bg-surface, text-muted, p-4…) or var(--…). Tailwind's default palette, spacing, type, radius and shadow
+ * scales are reset in globals.css, so a value that is not defined here cannot be used.
+ *
+ * Idea: "Statement". Every screen reads like a clear statement of what is true: label, leader, value.
+ * Calm: warm dark neutrals, no glow. Clear: one accent, used only for the main action. Thorough: 1px rules,
+ * tabular figures, every status spelled out in words.
+ */
+:root {
+  color-scheme: dark;
+
+  /* Surfaces: warm near-black, stepped by lightness. Layers separate by color step plus a 1px rule. */
+  --bg: #0f1110;
+  --surface: #151816;
+  --surface-2: #1b1f1d;
+  --surface-3: #232825;
+
+  /* Rules. --line is decorative (dividers). --line-control is a component boundary and passes 3:1. */
+  --line: #2c322f;
+  --line-strong: #3d4440;
+  --line-control: #6b746f;
+
+  /* Text */
+  --text: #edefec;
+  --text-muted: #a8b0ab;
+  --text-faint: #8a938e;
+
+  /* Accent: one per screen, for the main action and the current place. Starts at the brief's value.
+     OPEN DECISION (README): #00C805 matches Robinhood's brand green from memory, not verified. The alt set
+     below is a ready non-green option: switch with <html data-accent="alt">. */
+  --accent: #00c805;
+  --accent-hover: #2bd632;
+  --accent-press: #00a804;
+  --on-accent: #03140a;
+  --accent-text: #3ddc44;
+
+  /* Statuses. Never the only carrier of meaning: every status also has an icon and a word.
+     "Clear" uses calm text, not a green badge: a clear result does not mean "no risk". */
+  --success: #9ccdb1;
+  --success-bg: #17231d;
+  --success-line: #2f4a3c;
+  --danger: #f2907a;
+  --danger-bg: #2a1814;
+  --danger-line: #5a3128;
+  --danger-solid: #e3684d;
+  --on-danger: #1a0b07;
+  --warning: #e8c072;
+  --warning-bg: #282113;
+  --warning-line: #54452a;
+  --info: #9dbde6;
+  --info-bg: #161e28;
+  --info-line: #2d3d52;
+
+  --focus: #f4e7a1;
+
+  /* Type */
+  --font-body: var(--font-geist-sans), "Geist Fallback", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-code: var(--font-geist-mono), "Geist Mono Fallback", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Scale ratio ~1.25: 12, 14, 16, 20, 24, 32, 44, 60 */
+  --fs-12: 0.75rem;
+  --fs-14: 0.875rem;
+  --fs-16: 1rem;
+  --fs-20: 1.25rem;
+  --fs-24: 1.5rem;
+  --fs-32: clamp(1.625rem, 1.2rem + 1.6vw, 2rem);
+  --fs-44: clamp(2rem, 1.3rem + 2.8vw, 2.75rem);
+  --fs-60: clamp(2.375rem, 1.4rem + 4vw, 3.75rem);
+
+  /* Space: multiples of 4 only */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-24: 96px;
+
+  /* Rhythm: three levels */
+  --gap-tight: var(--sp-2);
+  --gap-mid: var(--sp-6);
+  --gap-loose: var(--sp-24);
+
+  /* Layout */
+  --content-max: 1160px;
+  --measure: 68ch;
+  --gutter: var(--sp-4);
+  --header-h: 64px;
+  --w-dialog: 34rem;
+  --w-dialog-lg: 44rem;
+  --w-toast: 24rem;
+  --w-tip: 18rem;
+  --w-form: 36rem;
+  --w-sidebar: 15rem;
+  --h-dialog-max: 90dvh;
+  --h-preview: 18rem;
+
+  /* Shape: one language. Small radius, 1px rules. */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --border-w: 1px;
+
+  /* Elevation: three levels. flat = bg; raised = surface + line; floating = surface-2 + strong line + shadow. */
+  --elev-floating: 0 12px 32px rgb(0 0 0 / 0.45), 0 0 0 1px var(--line-strong);
+
+  /* Motion: steady, no bounce. */
+  --dur-micro: 100ms;
+  --dur-element: 200ms;
+  --dur-panel: 320ms;
+  --easing-out: cubic-bezier(0.2, 0, 0, 1);
+  --easing-in: cubic-bezier(0.4, 0, 1, 1);
+
+  --touch: 44px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: var(--sp-6);
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --gutter: var(--sp-8);
+  }
+}
+
+/* Ready-to-use non-green accent (AA-checked by scripts/contrast-check.mjs). */
+html[data-accent="alt"] {
+  --accent: #e6dcc3;
+  --accent-hover: #f0e8d4;
+  --accent-press: #d3c8ad;
+  --on-accent: #151816;
+  --accent-text: #e6dcc3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-micro: 0ms;
+    --dur-element: 0ms;
+    --dur-panel: 0ms;
+  }
+}
