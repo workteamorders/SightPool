@@ -34,6 +34,9 @@ for (const p of ["paper", "paper-2", "paper-worst", "paper-2-worst"]) {
 }
 pairs.push(["manila-ink", "manila", 4.5], ["manila-ink", "manila-worst", 4.5]);
 pairs.push(["paper", "bg", 3], ["paper", "surface", 3]);
+// The lamp lightens --bg by at most about 12% behind the hero (two layers overlap). Text on it is checked at 12%.
+for (const set of [base, alt]) if (set.lamp) set["bg-lamp"] = mix(set.bg, set.lamp, 0.12);
+for (const t of ["text", "text-muted", "text-faint", "accent-text", "success", "warning", "danger", "info"]) pairs.push([t, "bg-lamp", 4.5]);
 const problems = [];
 const rows = [];
 for (const [set, name] of [[base, "default"], [alt, "alt accent"]]) {

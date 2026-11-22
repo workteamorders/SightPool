@@ -13,6 +13,7 @@ import { Row, Statement } from "@/components/ui/statement";
 import { StatusStrip } from "@/components/site/status-strip";
 import { ArchiveFolder, BinderEdge } from "@/components/site/archive-folder";
 import { Principles } from "@/components/site/principles";
+import { Ambience } from "@/components/site/ambience";
 import { Receipt } from "@/components/app/receipt";
 import { DISCLOSURES } from "@/content/disclosures";
 import { formatAmount } from "@/lib/format";
@@ -97,8 +98,9 @@ export default function Home() {
     <>
       {/* 1. What it is, for whom, proof, one action */}
       <div className="relative">
+        <Ambience />
         <BinderEdge />
-        <section className="mx-auto grid max-w-content items-start gap-12 px-gutter pb-12 pt-12 md:pt-16 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:pt-20">
+        <section className="relative z-10 mx-auto grid max-w-content items-start gap-12 px-gutter pb-12 pt-12 md:pt-16 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:pt-20">
           <div className="flex flex-col gap-6">
             <SightLine className="font-mono">
               {brand.name} archive / interface preview
@@ -149,7 +151,7 @@ export default function Home() {
             </p>
           </div>
         </section>
-        <div className="mx-auto max-w-content px-gutter pb-16 lg:pb-24">
+        <div className="relative z-10 mx-auto max-w-content px-gutter pb-16 lg:pb-24">
           <Principles />
         </div>
       </div>

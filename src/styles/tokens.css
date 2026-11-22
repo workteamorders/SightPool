@@ -75,6 +75,9 @@
   --paper-focus: #1b3f94;
   --paper-brown: #5c4622;
 
+  /* The desk lamp behind the landing hero (see Ambience). Each layer peaks at 8.5% over --bg and the two overlap near the folder; contrast is checked at 12%. */
+  --lamp: #ffe096;
+
   /* The folder and its binding: manila card, brass clip, rope. Decorative except the tab label (--manila-ink). */
   --manila: #bf9f66;
   --manila-shade: #a2824d;
