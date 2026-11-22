@@ -57,6 +57,8 @@ Every decision taken without asking, with the reason. Newest facts are in `docs/
 
 **D-22. Mock wallet address.** `0x1111…1111`, obviously fake. Mock shielded addresses use `mock-shielded:<40 hex>`. Every mock hash starts with `mock-`.
 
+**D-23. Forensic Archive direction (documents on paper).** The dark room stays the interface. Receipts, disclosure items, legal text and the fee schedule are sheets of warm paper in ink (`--paper`, `--ink*`, `--stamp` in `tokens.css`). The `.paper` class re-points the text, rule and focus tokens, so components inside a sheet need no variant. Stamps say "mock", "sample" or "draft" and never approval; they exist only on paper (rust on the dark room fails contrast) and are never the only carrier of the status: the banner and the footnote say it in words. File references on a sheet exist only for `mock-` hashes. The sight line also runs vertically through the five steps. No glass, glow, blur or texture was added. 28 new contrast pairs (140 total) cover ink, stamp, control rules and the focus ring on paper.
+
 ## Open decisions for the owner
 
 **O-1. Accent colour.** `--accent: #00c805` follows the brief. From memory, and not verified, this matches Robinhood's brand green, and the product names Robinhood Chain: risk of implied affiliation. A ready non-green alternative ships: set `data-accent="alt"` on `<html>` (bone `#e6dcc3` with dark text, AA-checked by `pnpm contrast:check`). The footer carries an affiliation disclaimer either way.

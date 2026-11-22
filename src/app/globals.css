@@ -47,6 +47,11 @@
   --color-info-bg: var(--info-bg);
   --color-info-line: var(--info-line);
   --color-focus: var(--focus);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-paper-line: var(--paper-line);
+  --color-ink: var(--ink);
+  --color-stamp: var(--stamp);
   --color-transparent: transparent;
 
   --spacing-0: 0px;
@@ -237,6 +242,108 @@
     flex: 0 1 auto;
     min-width: 0;
     overflow-wrap: anywhere;
+  }
+
+  /*
+   * The document layer. A sheet of paper laid on the dark room. It re-points the text, rule and focus tokens, so
+   * Statement rows, links, sight lines and body text inside it read in ink with no variant of their own.
+   * No shadow and no texture: the sheet separates from the room by lightness alone (15:1).
+   */
+  .paper {
+    --text: var(--ink);
+    --text-muted: var(--ink-muted);
+    --text-faint: var(--ink-faint);
+    --line: var(--paper-line);
+    --line-strong: var(--paper-line-strong);
+    --line-control: var(--paper-line-control);
+    --focus: var(--paper-focus);
+    position: relative;
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--paper-line-strong);
+    border-radius: var(--r-sm);
+    color-scheme: light;
+  }
+  .paper ::selection {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .paper .sightline::before {
+    border-color: var(--ink);
+  }
+  .paper-band {
+    background: var(--paper-2);
+    border-bottom: 1px solid var(--paper-line);
+  }
+  /* Tear line between the body of a sheet and its footnote. */
+  .paper-tear {
+    border-top: 1px dashed var(--paper-line-strong);
+  }
+  /* A folded corner, cut from the band color. Decorative only. */
+  .paper[data-fold]::after {
+    content: "";
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    width: 18px;
+    height: 18px;
+    background: linear-gradient(225deg, var(--bg) 50%, var(--paper-line) 50%);
+    border-bottom-left-radius: var(--r-sm);
+    pointer-events: none;
+  }
+
+  /* A rubber stamp: real text in a ruled box, set at a slight angle. It states "mock" or "sample". It never
+     states approval. The angle is fixed and the text is selectable and read by screen readers. */
+  .stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-1);
+    padding: 2px var(--sp-2);
+    border: 2px solid var(--stamp);
+    border-radius: var(--r-sm);
+    color: var(--stamp);
+    font-family: var(--font-code);
+    font-size: var(--fs-12);
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transform: rotate(-3deg);
+    white-space: nowrap;
+  }
+
+  /* The path: the sight line run vertically through an ordered list. Each step is an open square on one rule. */
+  .path {
+    position: relative;
+  }
+  .path > li {
+    position: relative;
+    padding-left: var(--sp-8);
+  }
+  .path > li::before {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--line-strong);
+  }
+  .path > li:first-child::before {
+    top: calc(var(--sp-6) + 0.6em);
+  }
+  .path > li:last-child::before {
+    bottom: calc(100% - var(--sp-6) - 0.6em);
+  }
+  .path > li::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: calc(var(--sp-6) + 0.6em - 3px);
+    width: 7px;
+    height: 7px;
+    background: var(--bg);
+    border: 1px solid var(--line-control);
   }
 
   .skeleton {

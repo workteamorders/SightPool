@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Privacy", description: "Placeholder 
 
 export default function Page() {
   return (
-    <LegalPage title="Privacy" lead={`What ${brand.name} collects: as little as it can.`}>
+    <LegalPage title="Privacy" fileRef="Privacy notice" lead={`What ${brand.name} collects: as little as it can.`}>
       <section className="flex flex-col gap-3">
         <h2>Stored in your browser only</h2>
         <ul>

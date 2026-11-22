@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Terms", description: "Placeholder te
 
 export default function Page() {
   return (
-    <LegalPage title="Terms" lead={`Version ${config.tosVersion}. The rules for using this interface preview, in plain words, until counsel writes the real terms.`}>
+    <LegalPage title="Terms" fileRef={`Terms · version ${config.tosVersion}`} lead={`Version ${config.tosVersion}. The rules for using this interface preview, in plain words, until counsel writes the real terms.`}>
       <section className="flex flex-col gap-3">
         <h2>What this is</h2>
         <p>{brand.name} is a software interface preview. In this build every action is simulated. It does not move funds, hold funds, hold keys, or send transactions.</p>

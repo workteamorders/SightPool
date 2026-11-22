@@ -3,9 +3,11 @@
  * (bg-surface, text-muted, p-4…) or var(--…). Tailwind's default palette, spacing, type, radius and shadow
  * scales are reset in globals.css, so a value that is not defined here cannot be used.
  *
- * Idea: "Statement". Every screen reads like a clear statement of what is true: label, leader, value.
- * Calm: warm dark neutrals, no glow. Clear: one accent, used only for the main action. Thorough: 1px rules,
- * tabular figures, every status spelled out in words.
+ * Idea: "Statement", set as a forensic archive. Every screen reads like a clear statement of what is true:
+ * label, leader, value. The dark room is the interface; the documents that carry the facts (receipts,
+ * disclosures, legal text, fee schedules) are warm paper laid on it, in ink.
+ * Calm: warm dark neutrals, no glow, no glass. Clear: one accent, used only for the main action. Thorough:
+ * 1px rules, tabular figures, every status spelled out in words.
  */
 :root {
   color-scheme: dark;
@@ -53,6 +55,22 @@
   --info-line: #2d3d52;
 
   --focus: #f4e7a1;
+
+  /* Paper and ink: the document layer. Used only inside .paper (see globals.css), which re-points the text,
+     rule and focus tokens so every component inside a sheet reads in ink without its own variant.
+     --paper-line and --paper-line-strong are decorative (rules, dotted leaders); --paper-line-control passes 3:1.
+     --stamp is the one mark color on a sheet. It is a rust, never a green: a stamp says "this is a mock or a
+     sample", it is not a mark of approval. */
+  --paper: #ebe7dc;
+  --paper-2: #e0dbce;
+  --paper-line: #cdc7b8;
+  --paper-line-strong: #a59f8f;
+  --paper-line-control: #6f6a5c;
+  --ink: #161815;
+  --ink-muted: #474c46;
+  --ink-faint: #5b6059;
+  --stamp: #9b3a1f;
+  --paper-focus: #1b3f94;
 
   /* Type */
   --font-body: var(--font-geist-sans), "Geist Fallback", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;

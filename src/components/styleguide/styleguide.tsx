@@ -17,6 +17,7 @@ import { Tooltip, InfoTip } from "@/components/ui/tooltip";
 import { BarChart } from "@/components/ui/chart";
 import { Address } from "@/components/ui/address";
 import { SightLine } from "@/components/ui/sightline";
+import { Paper, PaperBand, Stamp } from "@/components/ui/paper";
 import { Receipt } from "@/components/app/receipt";
 import type { ButtonVariant } from "@/components/ui/button-styles";
 
@@ -36,6 +37,11 @@ const COLORS: { name: string; v: string; role: string; on?: string }[] = [
   { name: "--danger", v: "#f2907a", role: "Danger text" },
   { name: "--info", v: "#9dbde6", role: "Information" },
   { name: "--focus", v: "#f4e7a1", role: "Focus ring" },
+  { name: "--paper", v: "#ebe7dc", role: "Document sheet" },
+  { name: "--paper-2", v: "#e0dbce", role: "Sheet band, emphasised item" },
+  { name: "--ink", v: "#161815", role: "Text on paper" },
+  { name: "--ink-muted", v: "#474c46", role: "Secondary text on paper" },
+  { name: "--stamp", v: "#9b3a1f", role: "Stamp: mock or sample, never approval" },
 ];
 
 const TYPE = [
@@ -101,7 +107,7 @@ export function Styleguide() {
           dark system and people read balances in low light.
         </p>
         <nav aria-label="Styleguide sections" className="flex flex-wrap gap-x-4 text-14">
-          {["colors", "type", "space", "shape", "motif", "buttons", "forms", "cards", "badges", "overlays", "data", "status", "product"].map((s) => (
+          {["colors", "type", "space", "shape", "motif", "paper", "buttons", "forms", "cards", "badges", "overlays", "data", "status", "product"].map((s) => (
             <a key={s} href={`#${s}`} className="link inline-flex min-h-touch items-center capitalize text-muted">
               {s}
             </a>
@@ -181,6 +187,32 @@ export function Styleguide() {
             <Row label="Unavailable value" value={<Dash />} />
           </Statement>
         </Panel>
+      </Section>
+
+      <Section id="paper" title="Paper: the document layer" note="Receipts, disclosures, legal text and fee schedules are sheets of paper on the dark room. Inside a sheet, every component reads in ink because .paper re-points the text, rule and focus tokens. A stamp says mock, sample or draft. It never says approved. No shadow, no texture: the sheet separates by lightness alone.">
+        <Paper fold className="max-w-form overflow-hidden">
+          <PaperBand fileRef="File mock-4f1a9c2e" className="pr-8">
+            <Stamp>Sample · mock</Stamp>
+          </PaperBand>
+          <div className="flex flex-col gap-4 p-4">
+            <SightLine>Section label on paper</SightLine>
+            <Statement label="Example statement on paper">
+              <Row label="Amount" value="200.00 USDG" mono emphasis />
+              <Row label="Relayer fee" value="None documented" />
+              <Row label="Unavailable value" value={<Dash />} />
+            </Statement>
+            <p className="text-14 text-muted">
+              Body text in <span className="text-text">ink</span>, with a <a className="link" href="#paper">link</a> and a <span className="text-faint">footnote tone</span>.
+            </p>
+          </div>
+          <p className="paper-tear px-4 py-3 text-12 text-muted">Footnote below a tear line.</p>
+        </Paper>
+        <Paper className="flex max-w-form flex-wrap items-center gap-4 p-4">
+          <Stamp>Mock</Stamp>
+          <Stamp>Sample</Stamp>
+          <Stamp>Draft</Stamp>
+          <p className="text-12 text-muted">Stamps only exist on paper: rust on the dark room would fail contrast.</p>
+        </Paper>
       </Section>
 
       <Section id="buttons" title="Buttons" note="One primary per view. Press feedback moves 1px and scales 99% in 100ms. Loading keeps the width. Hover, focus and pressed are shown statically here; they are live everywhere else.">

@@ -7,6 +7,7 @@ import { config } from "@config/env";
 import { buttonClass } from "@/components/ui/button-styles";
 import { Badge } from "@/components/ui/badge";
 import { Address } from "@/components/ui/address";
+import { Paper, PaperBand, Stamp } from "@/components/ui/paper";
 import { SightLine } from "@/components/ui/sightline";
 import { Row, Statement } from "@/components/ui/statement";
 import { StatusStrip } from "@/components/site/status-strip";
@@ -128,7 +129,9 @@ export default function Home() {
             }}
             screeningRef="mock-scr-3fa81c0e"
           />
-          <p className="text-12 text-faint">Sample receipt from the mock flow. Not a real transaction.</p>
+          <p className="text-12 text-faint">
+            <span className="num">Fig. 1</span> · Sample receipt from the mock flow. Not a real transaction.
+          </p>
         </div>
       </section>
 
@@ -144,9 +147,9 @@ export default function Home() {
             </h2>
             <p className="text-16 text-muted prose-measure">The flow is the same in mock mode and in any future real build. Only the mock lets you force failures to see how each one is explained.</p>
           </div>
-          <ol className="flex flex-col">
+          <ol className="path flex flex-col">
             {STEPS.map((s) => (
-              <li key={s.n} className="grid gap-3 border-t border-line py-6 last:border-b md:grid-cols-[4rem_1fr_14rem] md:gap-6">
+              <li key={s.n} className="grid gap-3 py-6 md:grid-cols-[3rem_1fr_14rem] md:gap-6">
                 <span className="num text-14 text-faint">{s.n}</span>
                 <div className="flex flex-col gap-1">
                   <h3 className="text-20 font-medium">{s.title}</h3>
@@ -177,23 +180,29 @@ export default function Home() {
               Full disclosures and risks
             </Link>
           </div>
-          <div className="grid gap-px overflow-hidden rounded-md border border-line bg-line md:grid-cols-2">
-            {DISCLOSURES.slice(0, 5).map((d, i) => (
-              <article key={d.id} className={i === 0 ? "flex flex-col gap-2 bg-surface-2 p-6 md:col-span-2" : "flex flex-col gap-2 bg-surface p-6"}>
-                <h3 className={i === 0 ? "text-20 font-medium" : "text-16 font-medium"}>{d.title}</h3>
-                <p className="text-14 text-muted">{d.body}</p>
-                {d.sources && (
-                  <p className="mt-auto flex flex-wrap gap-x-4 pt-2 text-12">
-                    {d.sources.map((s) => (
-                      <a key={s.href} href={s.href} target="_blank" rel="noopener noreferrer" className="link inline-flex min-h-touch items-center text-muted">
-                        {s.label} (source)
-                      </a>
-                    ))}
-                  </p>
-                )}
-              </article>
-            ))}
-          </div>
+          <Paper fold className="overflow-hidden">
+            <PaperBand fileRef={`Disclosures · checked ${FACTS_CHECKED_ON}`} className="pr-8">
+              <Stamp>Draft</Stamp>
+            </PaperBand>
+            <div className="grid gap-px bg-line md:grid-cols-2">
+              {DISCLOSURES.slice(0, 5).map((d, i) => (
+                <article key={d.id} className={i === 0 ? "flex flex-col gap-2 bg-paper-2 p-6 md:col-span-2" : "flex flex-col gap-2 bg-paper p-6"}>
+                  <p className="num text-12 text-faint">Item {String(i + 1).padStart(2, "0")}</p>
+                  <h3 className={i === 0 ? "text-20 font-medium" : "text-16 font-medium"}>{d.title}</h3>
+                  <p className="text-14 text-muted">{d.body}</p>
+                  {d.sources && (
+                    <p className="mt-auto flex flex-wrap gap-x-4 pt-2 text-12">
+                      {d.sources.map((s) => (
+                        <a key={s.href} href={s.href} target="_blank" rel="noopener noreferrer" className="link inline-flex min-h-touch items-center text-muted">
+                          {s.label} (source)
+                        </a>
+                      ))}
+                    </p>
+                  )}
+                </article>
+              ))}
+            </div>
+          </Paper>
         </div>
       </section>
 
@@ -224,7 +233,7 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <div className="rounded-md border border-line bg-surface p-6">
+            <Paper className="p-6">
               <p className="mb-4 text-16 font-medium">USDG pool fees</p>
               <Statement label="Fees">
                 <Row label="Protocol/relayer flat fee" value={`${formatAmount(USDG_POOL_FEE.fixedRaw, USDG_DECIMALS, { min: 1 })} USDG`} mono />
@@ -239,7 +248,7 @@ export default function Home() {
                 </a>
                 . The fee is the protocol&apos;s, not {brand.name}&apos;s.
               </p>
-            </div>
+            </Paper>
           </div>
         </div>
       </section>

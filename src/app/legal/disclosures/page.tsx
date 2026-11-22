@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Disclosures and risks", description:
 
 export default function Page() {
   return (
-    <LegalPage title="Disclosures and risks" lead={`What ${brand.name} does, what the underlying pool does, and what can go wrong. Checked on ${FACTS_CHECKED_ON}. Facts change: verify them again before relying on them.`}>
+    <LegalPage title="Disclosures and risks" fileRef={`Disclosures · checked ${FACTS_CHECKED_ON}`} lead={`What ${brand.name} does, what the underlying pool does, and what can go wrong. Checked on ${FACTS_CHECKED_ON}. Facts change: verify them again before relying on them.`}>
       {DISCLOSURES.map((d) => (
         <section key={d.id} id={d.id} className="flex flex-col gap-3">
           <h2>{d.title}</h2>

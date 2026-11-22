@@ -22,6 +22,12 @@ for (const s of SURF.slice(0, 3)) pairs.push(["line-control", s, 3]);
 pairs.push(["on-accent", "accent", 4.5], ["on-accent", "accent-hover", 4.5], ["on-accent", "accent-press", 4.5], ["on-danger", "danger-solid", 4.5], ["on-danger", "danger", 4.5]);
 pairs.push(["success", "success-bg", 4.5], ["warning", "warning-bg", 4.5], ["danger", "danger-bg", 4.5], ["info", "info-bg", 4.5], ["text", "warning-bg", 4.5], ["text-muted", "warning-bg", 4.5], ["text-muted", "info-bg", 4.5], ["text-muted", "danger-bg", 4.5], ["text-muted", "success-bg", 4.5]);
 pairs.push(["accent", "bg", 3], ["accent", "surface-3", 3], ["text-faint", "surface-3", 4.5]);
+// Document layer: ink on paper, the stamp mark, control rules and focus ring on paper, and the sheet against the room.
+for (const p of ["paper", "paper-2"]) {
+  for (const t of ["ink", "ink-muted", "ink-faint", "stamp"]) pairs.push([t, p, 4.5]);
+  pairs.push(["paper-line-control", p, 3], ["paper-focus", p, 3]);
+}
+pairs.push(["paper", "bg", 3], ["paper", "surface", 3]);
 const problems = [];
 const rows = [];
 for (const [set, name] of [[base, "default"], [alt, "alt accent"]]) {
