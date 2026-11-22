@@ -118,7 +118,8 @@
     border-color: var(--line);
   }
   html {
-    background: var(--bg);
+    background-color: var(--bg);
+    background-image: url("/grain-dark.png");
     color: var(--text);
     font-family: var(--font-body);
     -webkit-text-size-adjust: 100%;
@@ -258,11 +259,18 @@
     --line-control: var(--paper-line-control);
     --focus: var(--paper-focus);
     position: relative;
-    background: var(--paper);
+    background-color: var(--paper);
+    background-image: url("/grain-paper.png");
+    box-shadow: inset 0 0 28px rgb(92 70 34 / 0.12);
     color: var(--ink);
     border: 1px solid var(--paper-line-strong);
     border-radius: var(--r-sm);
     color-scheme: light;
+  }
+  /* A torn bottom edge, cut with a clip path. Decorative: the content above the tear is never clipped. */
+  .paper[data-torn] {
+    padding-bottom: 8px;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 7px), 97% calc(100% - 3px), 94% calc(100% - 8px), 90% calc(100% - 4px), 86% calc(100% - 9px), 81% calc(100% - 3px), 77% calc(100% - 7px), 72% calc(100% - 2px), 67% calc(100% - 8px), 62% calc(100% - 4px), 57% calc(100% - 9px), 52% calc(100% - 3px), 47% calc(100% - 7px), 41% calc(100% - 2px), 36% calc(100% - 8px), 31% calc(100% - 4px), 26% calc(100% - 9px), 21% calc(100% - 3px), 15% calc(100% - 7px), 10% calc(100% - 3px), 5% calc(100% - 8px), 0 calc(100% - 4px));
   }
   .paper ::selection {
     background: var(--ink);
@@ -272,7 +280,8 @@
     border-color: var(--ink);
   }
   .paper-band {
-    background: var(--paper-2);
+    background-color: var(--paper-2);
+    background-image: url("/grain-paper.png");
     border-bottom: 1px solid var(--paper-line);
   }
   /* Tear line between the body of a sheet and its footnote. */
@@ -344,6 +353,123 @@
     height: 7px;
     background: var(--bg);
     border: 1px solid var(--line-control);
+  }
+
+  /*
+   * The archive folder (landing hero): a manila folder with a tab, two loose sheets behind the front sheet, and a
+   * clip. All decorative and aria-hidden; the front sheet is the real receipt. The shadow is the one place a
+   * drop shadow is used: it separates a stack of paper from the room.
+   */
+  .archive {
+    position: relative;
+    padding: 72px 6px 28px 6px;
+  }
+  @media (min-width: 48rem) {
+    .archive {
+      padding: 72px 20px 32px 16px;
+    }
+    .archive .archive-front {
+      margin-right: 28px;
+    }
+    .archive .archive-clip {
+      left: 24%;
+    }
+  }
+  .archive-back {
+    position: absolute;
+    inset: 48px 0 0 0;
+    background-color: var(--manila);
+    background-image: url("/grain-paper.png");
+    border: 1px solid var(--manila-shade);
+    border-radius: var(--r-md);
+    box-shadow: 0 24px 48px rgb(0 0 0 / 0.5), inset 0 0 36px rgb(92 70 34 / 0.25);
+    transform: rotate(0.6deg);
+  }
+  .archive-tab {
+    position: absolute;
+    top: -40px;
+    right: 24px;
+    padding: 6px 36px 6px 40px;
+    white-space: nowrap;
+    background-color: var(--manila);
+    background-image: url("/grain-paper.png");
+    border: 1px solid var(--manila-shade);
+    border-bottom: 0;
+    border-radius: var(--r-md) var(--r-md) 0 0;
+    clip-path: polygon(0 100%, 5% 0, 95% 0, 100% 100%);
+    color: var(--manila-ink);
+    font-family: var(--font-code);
+    font-size: var(--fs-12);
+    line-height: 1.5;
+    letter-spacing: 0.1em;
+    text-align: right;
+    text-transform: uppercase;
+  }
+  .archive-sheet {
+    position: absolute;
+    background-color: var(--paper-2);
+    background-image: url("/grain-paper.png");
+    border: 1px solid var(--paper-line-strong);
+    border-radius: var(--r-sm);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+  }
+  .archive-sheet-a {
+    inset: 68px 40px 16px 4px;
+    transform: rotate(-2.2deg);
+  }
+  .archive-sheet-b {
+    inset: 76px 8px 24px 52px;
+    transform: rotate(1.8deg);
+  }
+  .archive-front {
+    position: relative;
+    margin-right: 10px;
+    transform: rotate(-0.5deg);
+    filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.3));
+  }
+  .archive-clip {
+    position: absolute;
+    top: 16px;
+    left: 10%;
+    z-index: 2;
+    margin-left: -34px;
+    filter: drop-shadow(0 4px 4px rgb(0 0 0 / 0.4));
+  }
+
+  /* The binding on the left edge of the hero (wide screens only): punched holes and a rope through them. */
+  .binder {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 64px;
+    background-color: rgb(0 0 0 / 0.28);
+    background-image: radial-gradient(circle at 28px 50%, #050606 0 9px, rgb(237 239 236 / 0.1) 9px 10px, transparent 11px);
+    background-size: 64px 168px;
+    background-position: 0 48px;
+    background-repeat: repeat-y;
+    border-right: 1px solid var(--line);
+    pointer-events: none;
+  }
+  .binder::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 14px;
+    width: 5px;
+    background-image: repeating-linear-gradient(160deg, var(--rope) 0 3px, #6e5d3d 3px 6px);
+    border-radius: 3px;
+    box-shadow: 1px 0 2px rgb(0 0 0 / 0.5);
+  }
+
+  /* The headline underline: one hand-drawn stroke in the accent. Decorative. */
+  .hand-underline {
+    display: block;
+    width: min(100%, 22rem);
+    height: 14px;
+    margin-top: var(--sp-2);
+    color: var(--accent);
   }
 
   .skeleton {

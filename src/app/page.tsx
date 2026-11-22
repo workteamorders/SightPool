@@ -11,6 +11,8 @@ import { Paper, PaperBand, Stamp } from "@/components/ui/paper";
 import { SightLine } from "@/components/ui/sightline";
 import { Row, Statement } from "@/components/ui/statement";
 import { StatusStrip } from "@/components/site/status-strip";
+import { ArchiveFolder, BinderEdge } from "@/components/site/archive-folder";
+import { Principles } from "@/components/site/principles";
 import { Receipt } from "@/components/app/receipt";
 import { DISCLOSURES } from "@/content/disclosures";
 import { formatAmount } from "@/lib/format";
@@ -94,46 +96,63 @@ export default function Home() {
   return (
     <>
       {/* 1. What it is, for whom, proof, one action */}
-      <section className="mx-auto grid max-w-content items-start gap-12 px-gutter pb-16 pt-12 md:pt-16 lg:grid-cols-[1.15fr_1fr] lg:gap-16 lg:pb-24 lg:pt-24">
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge tone="mock">Interface preview</Badge>
-            <Badge tone="locked">Mainnet gated</Badge>
+      <div className="relative">
+        <BinderEdge />
+        <section className="mx-auto grid max-w-content items-start gap-12 px-gutter pb-12 pt-12 md:pt-16 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:pt-20">
+          <div className="flex flex-col gap-6">
+            <SightLine className="font-mono">
+              {brand.name} archive / interface preview
+            </SightLine>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge tone="mock">Interface preview</Badge>
+              <Badge tone="locked">Mainnet gated</Badge>
+            </div>
+            <div>
+              <h1 className="text-44 font-bold lg:text-60">A compliance-first interface for the USDG privacy pool on Robinhood Chain.</h1>
+              <svg aria-hidden focusable="false" viewBox="0 0 352 14" preserveAspectRatio="none" className="hand-underline">
+                <path d="M2 9C60 3 130 11 200 6s120-2 150 2" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+              </svg>
+            </div>
+            <p className="prose-measure font-mono text-14 text-muted md:text-16">{SUBHEAD}</p>
+            <p className="prose-measure border-l-2 border-accent pl-4 font-mono text-12 text-muted md:text-14">
+              For USDG holders outside the United States who need to show their own activity to an auditor or tax advisor. Interface preview: every action runs in mock mode.
+            </p>
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <Link href="/app/shield/" className={buttonClass("primary", "lg")}>
+                Open the preview
+                <ArrowRight aria-hidden className="size-4" />
+              </Link>
+              <Link href="/legal/disclosures/" className="link inline-flex min-h-touch items-center text-16">
+                Read the disclosures first
+              </Link>
+            </div>
           </div>
-          <h1 className="text-44 font-semibold lg:text-60">A compliance-first interface for the USDG privacy pool on Robinhood Chain.</h1>
-          <p className="text-20 text-muted prose-measure">{SUBHEAD}</p>
-          <p className="text-16 text-muted prose-measure">
-            For USDG holders outside the United States who need to show their own activity to an auditor or tax advisor. Interface preview: every action runs in mock mode.
-          </p>
-          <div className="flex flex-wrap items-center gap-4 pt-2">
-            <Link href="/app/shield/" className={buttonClass("primary", "lg")}>
-              Open the preview
-              <ArrowRight aria-hidden className="size-4" />
-            </Link>
-            <Link href="/legal/disclosures/" className="link inline-flex min-h-touch items-center text-16">
-              Read the disclosures first
-            </Link>
+          <div className="flex flex-col gap-3">
+            <ArchiveFolder>
+              <Receipt
+                sample
+                archive
+                item={{
+                  kind: "shield",
+                  amount: 200_000_000n,
+                  fee: 0n,
+                  hash: "mock-0x4f1a9c2e7b30d58e6a1f0c9b2d47e8a35c6b1f90e2d4a7c8b5e3f1029a6d7c4e",
+                  commitment: "mock-c-9e2b7c41d0a63f58e1b2c7d94a0f6e3b",
+                  counterparty: null,
+                  createdAt: Date.UTC(2026, 10, 22, 9, 30),
+                }}
+                screeningRef="mock-scr-3fa81c0e"
+              />
+            </ArchiveFolder>
+            <p className="px-4 font-mono text-12 text-faint">
+              <span className="num">Fig. 1</span> · Sample receipt from the mock flow. Not a real transaction.
+            </p>
           </div>
+        </section>
+        <div className="mx-auto max-w-content px-gutter pb-16 lg:pb-24">
+          <Principles />
         </div>
-        <div className="flex flex-col gap-3">
-          <Receipt
-            sample
-            item={{
-              kind: "shield",
-              amount: 200_000_000n,
-              fee: 0n,
-              hash: "mock-0x4f1a9c2e7b30d58e6a1f0c9b2d47e8a35c6b1f90e2d4a7c8b5e3f1029a6d7c4e",
-              commitment: "mock-c-9e2b7c41d0a63f58e1b2c7d94a0f6e3b",
-              counterparty: null,
-              createdAt: Date.UTC(2026, 10, 22, 9, 30),
-            }}
-            screeningRef="mock-scr-3fa81c0e"
-          />
-          <p className="text-12 text-faint">
-            <span className="num">Fig. 1</span> · Sample receipt from the mock flow. Not a real transaction.
-          </p>
-        </div>
-      </section>
+      </div>
 
       <StatusStrip />
 

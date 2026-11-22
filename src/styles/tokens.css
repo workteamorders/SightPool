@@ -58,19 +58,29 @@
 
   /* Paper and ink: the document layer. Used only inside .paper (see globals.css), which re-points the text,
      rule and focus tokens so every component inside a sheet reads in ink without its own variant.
+     Aged paper with a grain texture on top (public/grain-paper.png, up to about 20% brown). Contrast is checked
+     against the paper blended 20% toward that brown, the worst case the texture produces.
      --paper-line and --paper-line-strong are decorative (rules, dotted leaders); --paper-line-control passes 3:1.
      --stamp is the one mark color on a sheet. It is a rust, never a green: a stamp says "this is a mock or a
      sample", it is not a mark of approval. */
-  --paper: #ebe7dc;
-  --paper-2: #e0dbce;
-  --paper-line: #cdc7b8;
-  --paper-line-strong: #a59f8f;
-  --paper-line-control: #6f6a5c;
-  --ink: #161815;
-  --ink-muted: #474c46;
-  --ink-faint: #5b6059;
-  --stamp: #9b3a1f;
+  --paper: #eadfc4;
+  --paper-2: #ddd0b0;
+  --paper-line: #c4b692;
+  --paper-line-strong: #9d8f6c;
+  --paper-line-control: #5f5440;
+  --ink: #17140d;
+  --ink-muted: #3d3626;
+  --ink-faint: #4a432f;
+  --stamp: #7f2a14;
   --paper-focus: #1b3f94;
+  --paper-brown: #5c4622;
+
+  /* The folder and its binding: manila card, brass clip, rope. Decorative except the tab label (--manila-ink). */
+  --manila: #bf9f66;
+  --manila-shade: #a2824d;
+  --manila-ink: #20180a;
+  --brass: #8d887e;
+  --rope: #a58f66;
 
   /* Type */
   --font-body: var(--font-geist-sans), "Geist Fallback", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;

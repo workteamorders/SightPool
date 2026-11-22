@@ -1,4 +1,5 @@
-import { Paper, PaperBand, Stamp } from "@/components/ui/paper";
+import { brand } from "@config/brand";
+import { Paper, PaperBand, Seal, Stamp } from "@/components/ui/paper";
 import { Row, Statement } from "@/components/ui/statement";
 import { formatAmount, formatDate, shortHex } from "@/lib/format";
 import { USDG_DECIMALS } from "@config/allowlist";
@@ -16,10 +17,10 @@ function fileRef(hash: string): string | null {
 
 /** Receipt for a completed mock action, set as a sheet of paper. Always stamped mock. Proof after the action:
  *  hash, commitment, time. */
-export function Receipt({ item, screeningRef, sample }: { item: Pick<ActivityItem, "kind" | "amount" | "fee" | "hash" | "commitment" | "counterparty" | "createdAt">; screeningRef?: string | null; sample?: boolean }) {
+export function Receipt({ item, screeningRef, sample, archive }: { item: Pick<ActivityItem, "kind" | "amount" | "fee" | "hash" | "commitment" | "counterparty" | "createdAt">; screeningRef?: string | null; sample?: boolean; archive?: boolean }) {
   return (
-    <Paper fold className="overflow-hidden">
-      <PaperBand fileRef={fileRef(item.hash)} className="pr-8">
+    <Paper fold={!archive} torn={archive} className="overflow-hidden">
+      <PaperBand fileRef={fileRef(item.hash)} className={archive ? "pr-4 pt-12" : "pr-8"}>
         <Stamp>{sample ? "Sample · mock" : "Mock"}</Stamp>
       </PaperBand>
       <div className="flex flex-col gap-4 px-4 py-4">
@@ -36,7 +37,10 @@ export function Receipt({ item, screeningRef, sample }: { item: Pick<ActivityIte
           <Row label="Time" value={formatDate(item.createdAt)} mono />
         </Statement>
       </div>
-      <p className="paper-tear px-4 py-3 text-12 text-muted">Mock mode: no real funds are moved. Hashes and commitments here are not on any chain.</p>
+      <div className={archive ? "paper-tear relative min-h-[7rem]" : "paper-tear relative"}>
+        <p className={archive ? "px-4 py-4 pr-[8.5rem] text-12 text-muted" : "px-4 py-3 text-12 text-muted"}>Mock mode: no real funds are moved. Hashes and commitments here are not on any chain.</p>
+        {archive && <Seal brandName={brand.name} className="absolute bottom-3 right-3" />}
+      </div>
     </Paper>
   );
 }

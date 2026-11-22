@@ -32,7 +32,8 @@ node e2e/serve.cjs         # local preview on :4173, emulates /api/geo and /api/
 | `pnpm brand:check` | The product name appears only in `config/brand.ts`. |
 | `pnpm copy:check` | No forbidden claims ("untraceable", "anonymous", "safe", "audited"…), denials allowed. |
 | `pnpm nowrite:check` | Zero `writeContract`, `sendTransaction`, `signMessage`, `signTypedData`, `personal_sign`, `eth_sendRawTransaction`, `api.rail20.org`, `@rail20` in `src/` and `functions/`; exactly one `PoolClient` implementation (mock). |
-| `pnpm contrast:check` | 140 WCAG pairs from the token file (dark room and paper), for both accent options. |
+| `pnpm textures` | Regenerates `public/grain-dark.png` and `public/grain-paper.png` from code (fixed seed). |
+| `pnpm contrast:check` | 168 WCAG pairs from the token file (dark room, paper, and paper under its grain texture), for both accent options. |
 | `pnpm links:check` | Every internal link in `out/` resolves; banned routes (`/token`, `/airdrop`, `/stake`, `/stocks`, `/shield-nvda`) do not exist. Run after build. |
 | `pnpm placeholders:list` | Lists unconfigured placeholders (`--write` updates the table below). |
 

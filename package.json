@@ -16,7 +16,8 @@
     "links:check": "node scripts/links-check.mjs",
     "nowrite:check": "node scripts/nowrite-check.mjs",
     "contrast:check": "node scripts/contrast-check.mjs",
-    "check": "pnpm typecheck && pnpm test && pnpm brand:check && pnpm copy:check && pnpm nowrite:check && pnpm contrast:check"
+    "check": "pnpm typecheck && pnpm test && pnpm brand:check && pnpm copy:check && pnpm nowrite:check && pnpm contrast:check",
+    "textures": "python3 scripts/make-textures.py"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "1.3.1",

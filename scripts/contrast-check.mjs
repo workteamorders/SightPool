@@ -23,10 +23,16 @@ pairs.push(["on-accent", "accent", 4.5], ["on-accent", "accent-hover", 4.5], ["o
 pairs.push(["success", "success-bg", 4.5], ["warning", "warning-bg", 4.5], ["danger", "danger-bg", 4.5], ["info", "info-bg", 4.5], ["text", "warning-bg", 4.5], ["text-muted", "warning-bg", 4.5], ["text-muted", "info-bg", 4.5], ["text-muted", "danger-bg", 4.5], ["text-muted", "success-bg", 4.5]);
 pairs.push(["accent", "bg", 3], ["accent", "surface-3", 3], ["text-faint", "surface-3", 4.5]);
 // Document layer: ink on paper, the stamp mark, control rules and focus ring on paper, and the sheet against the room.
-for (const p of ["paper", "paper-2"]) {
+// The grain texture darkens paper toward --paper-brown by up to about 20%, so text is checked against that blend too.
+const mix = (a, b, t) => "#" + [1, 3, 5].map((i) => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, "0")).join("");
+for (const set of [base, alt]) {
+  for (const k of ["paper", "paper-2", "manila"]) if (set[k] && set["paper-brown"]) set[k + "-worst"] = mix(set[k], set["paper-brown"], 0.2);
+}
+for (const p of ["paper", "paper-2", "paper-worst", "paper-2-worst"]) {
   for (const t of ["ink", "ink-muted", "ink-faint", "stamp"]) pairs.push([t, p, 4.5]);
   pairs.push(["paper-line-control", p, 3], ["paper-focus", p, 3]);
 }
+pairs.push(["manila-ink", "manila", 4.5], ["manila-ink", "manila-worst", 4.5]);
 pairs.push(["paper", "bg", 3], ["paper", "surface", 3]);
 const problems = [];
 const rows = [];
