@@ -37,6 +37,17 @@ node e2e/serve.cjs         # local preview on :4173, emulates /api/geo and /api/
 | `pnpm links:check` | Every internal link in `out/` resolves; banned routes (`/token`, `/airdrop`, `/stake`, `/stocks`, `/shield-nvda`) do not exist. Run after build. |
 | `pnpm placeholders:list` | Lists unconfigured placeholders (`--write` updates the table below). |
 
+## Live background: adjust or switch off
+
+The hero background is decorative and starts after the page has loaded. Ways to change it:
+
+| What | How |
+| --- | --- |
+| Switch one effect off for everyone | `config/ambience.ts`: set `light`, `dust`, `sightlines`, `depth`, `parallax` or `scroll` to `false`, then rebuild. |
+| Change intensity | `src/styles/tokens.css`: `--amb-light` (keep at or below 0.09 or re-check contrast), `--amb-cycle`, `--amb-line-cycle`, `--amb-parallax` (px, 3 to 6), `--amb-scroll`. |
+| Switch everything off for a visitor | The "Pause motion" button in the footer, or the system setting "reduce motion". The picture stays complete, only still. |
+| Check | `pnpm e2e` (`e2e/motion.spec.ts`) and `pnpm contrast:check`. |
+
 ## Deploy (Cloudflare Pages, free tier)
 
 1. Create a Pages project from this folder. Build command `pnpm build`, output directory `out`.

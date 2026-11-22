@@ -3,6 +3,7 @@ import { brand } from "@config/brand";
 import { config } from "@config/env";
 import { FACTS_CHECKED_ON } from "@config/facts";
 import { Logo } from "./logo";
+import { MotionToggle } from "./motion-toggle";
 
 const COLS = [
   {
@@ -70,6 +71,7 @@ export function SiteFooter() {
             {brand.name} does not take custody of funds, does not operate a relayer, and is not available to people in the United States or other restricted regions. Nothing here is
             financial, legal or tax advice.
           </p>
+          <MotionToggle />
         </div>
       </div>
     </footer>

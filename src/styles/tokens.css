@@ -75,8 +75,19 @@
   --paper-focus: #1b3f94;
   --paper-brown: #5c4622;
 
-  /* The desk lamp behind the landing hero (see Ambience). Each layer peaks at 8.5% over --bg and the two overlap near the folder; contrast is checked at 12%. */
+  /* The desk lamp behind the landing hero (see Ambience). Each layer peaks at --amb-light over --bg and two layers
+     overlap near the folder; contrast:check assumes 12% there, so keep --amb-light at or below 0.09. */
   --lamp: #ffe096;
+
+  /* Live background dials (see config/ambience.ts for the on/off switches).
+     --amb-light: strength of each lamp layer. --amb-cycle: one light sway, slow on purpose (20 to 30s).
+     --amb-line-cycle: how often a sight line is traced. --amb-parallax: cursor shift in px at its strongest layer
+     (keep within 3 to 6px). --amb-scroll: how far decorative layers lag behind the page, in px per px scrolled. */
+  --amb-light: 0.085;
+  --amb-cycle: 26s;
+  --amb-line-cycle: 30s;
+  --amb-parallax: 4px;
+  --amb-scroll: 0.04;
 
   /* The folder and its binding: manila card, brass clip, rope. Decorative except the tab label (--manila-ink). */
   --manila: #bf9f66;

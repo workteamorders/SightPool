@@ -14,6 +14,7 @@ import { StatusStrip } from "@/components/site/status-strip";
 import { ArchiveFolder, BinderEdge } from "@/components/site/archive-folder";
 import { Principles } from "@/components/site/principles";
 import { Ambience } from "@/components/site/ambience";
+import { HeroMotion } from "@/components/site/hero-motion";
 import { Receipt } from "@/components/app/receipt";
 import { DISCLOSURES } from "@/content/disclosures";
 import { formatAmount } from "@/lib/format";
@@ -97,7 +98,8 @@ export default function Home() {
   return (
     <>
       {/* 1. What it is, for whom, proof, one action */}
-      <div className="relative">
+      <div className="hero-stage relative" data-stage>
+        <HeroMotion />
         <Ambience />
         <BinderEdge />
         <section className="relative z-10 mx-auto grid max-w-content items-start gap-12 px-gutter pb-12 pt-12 md:pt-16 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:pt-20">
