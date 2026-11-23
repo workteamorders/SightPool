@@ -461,6 +461,10 @@
     background-image: repeating-linear-gradient(160deg, var(--rope) 0 3px, #6e5d3d 3px 6px);
     border-radius: 3px;
     box-shadow: 1px 0 2px rgb(0 0 0 / 0.5);
+    transform-origin: 50% 0;
+  }
+  [data-live] .binder::before {
+    animation: sp-rope 9s ease-in-out infinite alternate;
   }
 
   /* The headline underline: one hand-drawn stroke in the accent. Decorative. */
@@ -577,7 +581,7 @@
     animation: sp-mote 30s linear infinite;
   }
   @media (max-width: 47.99rem) {
-    .ambience-mote:nth-child(n + 9) {
+    .ambience-mote:nth-child(n + 13) {
       display: none;
     }
   }
@@ -671,6 +675,56 @@
   }
   [data-live] .sl-run-marker {
     animation: sp-run-marker var(--amb-line-cycle) linear 0.8s infinite;
+  }
+
+  /* Always-moving details, all small: a marker on the ruler, a UTC clock from the browser, a caret after the hero label.
+     Each rests hidden or in place without animation, so motion off leaves a complete still picture. */
+  .sl-ruler-marker {
+    position: absolute;
+    top: -3px;
+    right: 3px;
+    width: 7px;
+    height: 7px;
+    border: 1px solid var(--text);
+    background: var(--bg);
+  }
+  [data-live] .sl-ruler-marker {
+    animation: sp-ruler-marker 18s ease-in-out infinite alternate;
+  }
+  .amb-clock {
+    display: none;
+    position: absolute;
+    top: 3rem;
+    right: var(--sp-8);
+    font-family: var(--font-code);
+    font-size: var(--fs-12);
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--text-faint);
+    animation: sp-amb-fade 0.6s var(--easing-out) 1.1s backwards;
+  }
+  .amb-clock .num {
+    display: inline-block;
+    min-width: 8ch;
+  }
+  @media (min-width: 48rem) {
+    .amb-clock {
+      display: block;
+    }
+  }
+  .amb-caret {
+    display: inline-block;
+    width: 0.55em;
+    height: 1em;
+    margin-left: 0.4em;
+    vertical-align: -0.15em;
+    background: var(--accent);
+    opacity: 0;
+  }
+  [data-live] .amb-caret {
+    animation: sp-caret 1.1s steps(1, end) infinite;
   }
 
   /* Archival depth behind the receipt: two outlined silhouettes, four registration marks and a decorative number.
@@ -856,6 +910,40 @@
       opacity: 0;
     }
   }
+  @keyframes sp-ruler-marker {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(0, 22rem, 0);
+    }
+  }
+  @keyframes sp-rope {
+    from {
+      transform: rotate(-0.15deg);
+    }
+    to {
+      transform: rotate(0.2deg);
+    }
+  }
+  @keyframes sp-caret {
+    0%,
+    55% {
+      opacity: 1;
+    }
+    56%,
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes sp-tick {
+    from {
+      opacity: 0.35;
+    }
+    to {
+      opacity: 1;
+    }
+  }
   @keyframes sp-run {
     0% {
       opacity: 0;
@@ -921,6 +1009,10 @@
     to {
       transform: translate3d(0, 0, 0) rotate(3.2deg);
     }
+  }
+
+  .block-tick {
+    animation: sp-tick 0.5s var(--easing-out);
   }
 
   .skeleton {

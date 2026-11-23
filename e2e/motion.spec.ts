@@ -104,3 +104,44 @@ test("tablet 768: the decorative folders never cause sideways scrolling", async 
   const width = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(width).toBeLessThanOrEqual(768);
 });
+
+test.describe("always-moving details", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("ruler marker, rope, caret and dust run; the clock ticks; Pause motion stops them", async ({ page }) => {
+    await page.goto("/");
+    const name = (sel: string, pseudo?: string) => page.locator(sel).first().evaluate((e, p) => getComputedStyle(e, p ?? null).animationName, pseudo);
+    await expect.poll(() => name(".sl-ruler-marker")).toBe("sp-ruler-marker");
+    await expect.poll(() => name(".binder", "::before")).toBe("sp-rope");
+    await expect.poll(() => name(".amb-caret")).toBe("sp-caret");
+    await expect.poll(() => name(".ambience-mote")).toBe("sp-mote");
+    const clock = page.locator(".amb-clock .num");
+    await expect(clock).toHaveText(/^\d\d:\d\d:\d\d$/);
+    const first = await clock.textContent();
+    await expect.poll(() => clock.textContent(), { timeout: 4000 }).not.toBe(first);
+    // the clock says what it is
+    await expect(page.locator(".amb-clock")).toContainText("Clock · UTC");
+    await page.getByRole("button", { name: "Pause motion" }).click();
+    expect(await name(".sl-ruler-marker")).toBe("none");
+    expect(await name(".binder", "::before")).toBe("none");
+    expect(await name(".amb-caret")).toBe("none");
+    // a frozen display never shows a second
+    await expect(clock).toHaveText(/^\d\d:\d\d$/);
+    const hidden = await page.locator(".amb-caret").evaluate((e) => getComputedStyle(e).opacity);
+    expect(hidden).toBe("0");
+  });
+
+  test("the block number is read again while the tab stays open", async ({ page }) => {
+    await page.clock.install();
+    let reads = 0;
+    page.on("request", (r) => {
+      if (r.url().includes("/api/rpc") && (r.postData() ?? "").includes("eth_blockNumber")) reads += 1;
+    });
+    await page.goto("/");
+    await expect(page.getByRole("region", { name: "Current status" }).getByText(/Block \d/)).toBeVisible();
+    const initial = reads;
+    await page.clock.runFor(21_000);
+    await expect.poll(() => reads).toBeGreaterThan(initial);
+    await expect(page.getByRole("region", { name: "Current status" }).getByText(/Block \d/)).toBeVisible();
+  });
+});

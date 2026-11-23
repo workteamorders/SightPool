@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { AMBIENCE } from "@config/ambience";
+import { ArchiveClock } from "@/components/site/archive-clock";
 
 /**
  * The live background behind the landing hero, as markup only. Motion is CSS (transform and opacity, plus one
@@ -9,12 +10,14 @@ import { AMBIENCE } from "@config/ambience";
  *
  *   light      lamp cone, soft glow, and a shade that drifts behind the folder (about 26s per sway)
  *   dust       specks drifting through the light
+ *   marker     a small square that travels up and down the ruler without pause (with the ruler, wide screens)
+ *   clock      a UTC clock from the visitor's browser (tablet width up), labelled "Clock"
  *   sightlines a static ruler with coordinate marks, and one line traced now and then with a small marker. It
  *              runs along the top of the hero, clear of the receipt and every value on it.
  *
  * Specks are placed by a fixed formula, so the markup is identical on every build.
  */
-const MOTES = Array.from({ length: 18 }, (_, i) => {
+const MOTES = Array.from({ length: 26 }, (_, i) => {
   const r = (n: number) => {
     const x = Math.sin(i * 12.9898 + n * 78.233) * 43758.5453;
     return x - Math.floor(x);
@@ -25,7 +28,7 @@ const MOTES = Array.from({ length: 18 }, (_, i) => {
     size: 1 + Math.round(r(3) * 2),
     dur: 22 + r(4) * 26,
     delay: -r(5) * 40,
-    o: 0.2 + r(6) * 0.22,
+    o: 0.3 + r(6) * 0.2,
     dx: Math.round((r(7) - 0.5) * 64),
   };
 });
@@ -69,6 +72,7 @@ export function Ambience() {
               <span className="sl-label" style={{ top: 0 }}>y 00</span>
               <span className="sl-label" style={{ top: "9rem" }}>y 20</span>
               <span className="sl-label" style={{ top: "18rem" }}>y 40</span>
+              {AMBIENCE.marker && <span className="sl-ruler-marker" />}
             </div>
             <div className="sl-run">
               <div className="sl-run-line" />
@@ -78,6 +82,7 @@ export function Ambience() {
           </>
         )}
       </div>
+      {AMBIENCE.clock && <ArchiveClock />}
     </div>
   );
 }

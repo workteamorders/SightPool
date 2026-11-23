@@ -8,6 +8,7 @@ import { buttonClass } from "@/components/ui/button-styles";
 import { Badge } from "@/components/ui/badge";
 import { Address } from "@/components/ui/address";
 import { Paper, PaperBand, Stamp } from "@/components/ui/paper";
+import { AMBIENCE } from "@config/ambience";
 import { SightLine } from "@/components/ui/sightline";
 import { Row, Statement } from "@/components/ui/statement";
 import { StatusStrip } from "@/components/site/status-strip";
@@ -106,6 +107,7 @@ export default function Home() {
           <div className="flex flex-col gap-6">
             <SightLine className="font-mono">
               {brand.name} archive / interface preview
+              {AMBIENCE.caret && <span aria-hidden className="amb-caret" />}
             </SightLine>
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone="mock">Interface preview</Badge>

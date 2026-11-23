@@ -8,6 +8,9 @@ import { readBlockNumber, readChainId, readHasCode, readPaused } from "@/lib/rpc
 import { Dash } from "@/components/ui/statement";
 import { cn } from "@/lib/cn";
 
+/** The block number is read again at this interval while the tab is visible. Read-only, one small request. */
+const REFRESH_MS = 20_000;
+
 type Live = { loading: boolean; chainOk: boolean | null; block: bigint | null; poolCode: boolean | null; paused: boolean | null };
 
 /**
@@ -22,8 +25,17 @@ export function StatusStrip({ className }: { className?: string }) {
       const [chain, block, code, paused] = await Promise.all([readChainId(), readBlockNumber(), readHasCode(USDG_POOL), readPaused(USDG)]);
       if (alive) setLive({ loading: false, chainOk: chain === null ? null : chain.toLowerCase() === CHAIN_ID_HEX, block, poolCode: code, paused });
     })();
+    const refresh = async () => {
+      if (document.hidden) return;
+      const block = await readBlockNumber();
+      if (alive) setLive((l) => (l.loading ? l : { ...l, block }));
+    };
+    const id = window.setInterval(refresh, REFRESH_MS);
+    document.addEventListener("visibilitychange", refresh);
     return () => {
       alive = false;
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", refresh);
     };
   }, []);
 
@@ -34,7 +46,7 @@ export function StatusStrip({ className }: { className?: string }) {
     { k: "Underlying pool audit", v: config.poolAuditReportUrl ? <a className="link" href={config.poolAuditReportUrl}>Report</a> : "None on record" },
     {
       k: "Robinhood Chain",
-      v: live.loading ? <span className="skeleton inline-block h-3 w-16 align-middle" aria-label="Loading" /> : live.chainOk && live.block !== null ? <span className="num">Block {live.block.toLocaleString("en-US")}</span> : <Dash label="not readable right now" />,
+      v: live.loading ? <span className="skeleton inline-block h-3 w-16 align-middle" aria-label="Loading" /> : live.chainOk && live.block !== null ? <span key={String(live.block)} className="num block-tick">Block {live.block.toLocaleString("en-US")}</span> : <Dash label="not readable right now" />,
     },
     {
       k: "USDG pool contract",
