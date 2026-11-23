@@ -18,6 +18,9 @@ export const AMBIENCE = {
   clock: true,
   /** A blinking caret after the hero label. */
   caret: true,
+  /** A page-wide layer that stays in view while scrolling: chalk dust drifting through the whole viewport and a soft
+   *  band of light that sweeps slowly across the board (landing page only). */
+  board: true,
   /** Chalk notes that are written and erased in turn, with the smudges the eraser leaves (from desktop width). */
   chalk: true,
   /** Chalk dust falling slowly, and a tray where it settles under the chalk notes. */

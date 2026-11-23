@@ -30,7 +30,7 @@ const COLORS: { name: string; v: string; role: string; on?: string }[] = [
   { name: "--line-control", v: "#6b746f", role: "Control borders (3:1)" },
   { name: "--text", v: "#edefec", role: "Primary text" },
   { name: "--text-muted", v: "#a8b0ab", role: "Secondary text" },
-  { name: "--text-faint", v: "#8a938e", role: "Placeholders, footnotes" },
+  { name: "--text-faint", v: "#949d98", role: "Placeholders, footnotes" },
   { name: "--accent", v: "#00c805", role: "Main action, current place", on: "--on-accent" },
   { name: "--success", v: "#9ccdb1", role: "Success text" },
   { name: "--warning", v: "#e8c072", role: "Warning, mock" },

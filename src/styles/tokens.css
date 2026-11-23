@@ -26,7 +26,7 @@
   /* Text */
   --text: #edefec;
   --text-muted: #a8b0ab;
-  --text-faint: #8a938e;
+  --text-faint: #949d98;
 
   /* Accent: one per screen, for the main action and the current place. Starts at the brief's value.
      OPEN DECISION (README): #00C805 matches Robinhood's brand green from memory, not verified. The alt set
@@ -82,12 +82,15 @@
   /* Live background dials (see config/ambience.ts for the on/off switches).
      --amb-light: strength of each lamp layer. --amb-cycle: one light sway, slow on purpose (20 to 30s).
      --amb-line-cycle: how often a sight line is traced. --amb-parallax: cursor shift in px at its strongest layer
-     (keep within 3 to 6px). --amb-scroll: how far decorative layers lag behind the page, in px per px scrolled. */
+     (keep within 3 to 6px). --amb-scroll: how far decorative layers lag behind the page, in px per px scrolled.
+     --amb-sweep: peak strength of the light band that sweeps across the board; with the lamp it reaches about 16%, which
+     is what contrast:check assumes, so keep it at or below 0.04. */
   --amb-light: 0.085;
   --amb-cycle: 26s;
   --amb-line-cycle: 30s;
   --amb-parallax: 4px;
   --amb-scroll: 0.04;
+  --amb-sweep: 0.04;
 
   /* The folder and its binding: manila card, brass clip, rope. Decorative except the tab label (--manila-ink). */
   --manila: #bf9f66;

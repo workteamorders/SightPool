@@ -728,6 +728,44 @@
     animation: sp-caret 1.1s steps(1, end) infinite;
   }
 
+  /* The board: a layer fixed to the viewport behind the landing page, so something moves in view wherever the visitor
+     has scrolled. Chalk dust drifts through the viewport; a soft band of light sweeps across now and then. It rests out
+     of sight and starts with the rest (html[data-live]). Never takes pointer events; sits behind all content. */
+  .page-board {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    contain: strict;
+  }
+  .page-board-speck {
+    position: absolute;
+    border-radius: 9999px;
+    background: rgb(237 239 236);
+    opacity: 0;
+  }
+  .page-board-sweep {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -40vw;
+    width: 40vw;
+    background: linear-gradient(90deg, transparent, rgb(255 224 150 / var(--amb-sweep)), transparent);
+    opacity: 0;
+  }
+  html[data-live] .page-board-speck {
+    animation: sp-board-drift 45s ease-in-out infinite alternate;
+  }
+  html[data-live] .page-board-sweep {
+    animation: sp-board-sweep 52s linear infinite;
+  }
+  @media (max-width: 47.99rem) {
+    .page-board-speck:nth-child(n + 19) {
+      display: none;
+    }
+  }
+
   /* Chalk dust falling across the hero: cooler and whiter than the warm specks that rise through the lamp light. */
   .ambience-fall,
   .chalk-fall {
@@ -962,12 +1000,14 @@
 
   /* Motion off: the system asks for reduced motion, or Pause motion is on. Every layer stays at its resting state. */
   @media (prefers-reduced-motion: reduce) {
+    .page-board *,
     [data-stage] *,
     [data-stage] *::before,
     [data-stage] *::after {
       animation: none !important;
     }
   }
+  html[data-motion="paused"] .page-board *,
   html[data-motion="paused"] [data-stage] *,
   html[data-motion="paused"] [data-stage] *::before,
   html[data-motion="paused"] [data-stage] *::after,
@@ -1071,6 +1111,34 @@
     }
     to {
       opacity: 1;
+    }
+  }
+  @keyframes sp-board-drift {
+    0% {
+      transform: translate3d(0, 0, 0);
+      opacity: 0;
+    }
+    12%,
+    88% {
+      opacity: var(--o);
+    }
+    100% {
+      transform: translate3d(var(--dx), var(--dy), 0);
+      opacity: 0;
+    }
+  }
+  @keyframes sp-board-sweep {
+    0% {
+      transform: translate3d(0, 0, 0);
+      opacity: 0;
+    }
+    8%,
+    92% {
+      opacity: 1;
+    }
+    100% {
+      transform: translate3d(240vw, 0, 0);
+      opacity: 0;
     }
   }
   @keyframes sp-fall {

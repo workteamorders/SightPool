@@ -107,6 +107,7 @@ export function HeroMotion() {
     let timer = 0;
     const goLive = () => {
       stage.dataset.live = "true";
+      document.documentElement.dataset.live = "true";
     };
     const schedule = () => {
       if (window.requestIdleCallback) idle = window.requestIdleCallback(goLive, { timeout: 1500 });
@@ -133,6 +134,7 @@ export function HeroMotion() {
       reduce.removeEventListener("change", apply);
       delete stage.dataset.run;
       delete stage.dataset.live;
+      delete document.documentElement.dataset.live;
       clear();
     };
   }, []);

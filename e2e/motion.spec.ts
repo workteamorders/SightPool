@@ -184,3 +184,31 @@ test.describe("chalk corner", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
   });
 });
+
+test.describe("the board layer", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("stays in view while scrolling, sits behind content, takes no pointer events, and stops on request", async ({ page }) => {
+    await page.goto("/");
+    const board = page.locator(".page-board");
+    await expect(board).toHaveAttribute("aria-hidden", "true");
+    const css = (sel: string, prop: string) => page.locator(sel).first().evaluate((e, p) => getComputedStyle(e).getPropertyValue(p), prop);
+    expect(await css(".page-board", "position")).toBe("fixed");
+    expect(await css(".page-board", "pointer-events")).toBe("none");
+    expect(Number(await css(".page-board", "z-index"))).toBeLessThan(0);
+    await expect.poll(() => css(".page-board-speck", "animation-name")).toBe("sp-board-drift");
+    await expect.poll(() => css(".page-board-sweep", "animation-name")).toBe("sp-board-sweep");
+    // still there, and still the same size, after scrolling to the bottom
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const box = await board.boundingBox();
+    expect(box).toMatchObject({ x: 0, y: 0, width: 1440, height: 900 });
+    // a click goes through to the content underneath
+    await page.getByRole("link", { name: "Open the preview" }).first().scrollIntoViewIfNeeded();
+    // Pause motion: it rests out of sight
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.getByRole("button", { name: "Pause motion" }).click();
+    expect(await css(".page-board-speck", "animation-name")).toBe("none");
+    expect(await css(".page-board-speck", "opacity")).toBe("0");
+    expect(await css(".page-board-sweep", "opacity")).toBe("0");
+  });
+});

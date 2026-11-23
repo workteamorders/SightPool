@@ -15,6 +15,7 @@ import { StatusStrip } from "@/components/site/status-strip";
 import { ArchiveFolder, BinderEdge } from "@/components/site/archive-folder";
 import { Principles } from "@/components/site/principles";
 import { Ambience } from "@/components/site/ambience";
+import { PageBoard } from "@/components/site/page-board";
 import { ChalkBoard } from "@/components/site/chalk-board";
 import { HeroMotion } from "@/components/site/hero-motion";
 import { Receipt } from "@/components/app/receipt";
@@ -99,6 +100,7 @@ const FAQ: { q: string; a: React.ReactNode }[] = [
 export default function Home() {
   return (
     <>
+      <PageBoard />
       {/* 1. What it is, for whom, proof, one action */}
       <div className="hero-stage relative" data-stage>
         <HeroMotion />
