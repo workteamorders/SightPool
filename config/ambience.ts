@@ -18,6 +18,12 @@ export const AMBIENCE = {
   clock: true,
   /** A blinking caret after the hero label. */
   caret: true,
+  /** Chalk notes that are written and erased in turn, with the smudges the eraser leaves (from desktop width). */
+  chalk: true,
+  /** Chalk dust falling slowly, and a tray where it settles under the chalk notes. */
+  fall: true,
+  /** A small paper note pinned at one corner whose free edge lifts and settles (from desktop width). */
+  flutter: true,
   /** Outlined sheet silhouettes and registration marks behind the receipt. */
   depth: true,
   /** Cursor parallax on the decorative layers behind the receipt. Fine pointers only; never on touch. */

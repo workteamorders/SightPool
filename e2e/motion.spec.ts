@@ -145,3 +145,42 @@ test.describe("always-moving details", () => {
     await expect(page.getByRole("region", { name: "Current status" }).getByText(/Block \d/)).toBeVisible();
   });
 });
+
+test.describe("chalk corner", () => {
+  test.use({ viewport: { width: 1440, height: 1000 } });
+
+  test("notes are written and wiped, dust falls, the note flutters, and everything is decorative", async ({ page }) => {
+    await page.goto("/");
+    const board = page.locator(".chalk-board");
+    await expect(board).toHaveAttribute("aria-hidden", "true");
+    const name = (sel: string, pseudo?: string) => page.locator(sel).first().evaluate((e, p) => getComputedStyle(e, p ?? null).animationName, pseudo);
+    await expect.poll(() => name(".chalk-line")).toBe("sp-chalk");
+    await expect.poll(() => name(".chalk-smudge")).toBe("sp-smudge");
+    await expect.poll(() => name(".chalk-note")).toBe("sp-flutter");
+    await expect.poll(() => name(".chalk-note", "::after")).toBe("sp-curl");
+    await expect.poll(() => name(".chalk-fall")).toBe("sp-fall");
+    await expect.poll(() => name(".ambience-fall")).toBe("sp-fall");
+    // the notes only repeat statements the page already makes, and carry no figures
+    const texts = await page.locator(".chalk-line").allTextContents();
+    for (const t of texts) expect(t).not.toMatch(/\d|approved|verified|audited|safe/i);
+    // the board never overlaps the receipt or the figure caption
+    const b = await board.boundingBox();
+    const cap = await page.getByText("Sample receipt from the mock flow.").boundingBox();
+    expect(b!.y).toBeGreaterThanOrEqual(cap!.y + cap!.height);
+    // Pause motion: the picture rests, first notes whole, second notes out of sight
+    await page.getByRole("button", { name: "Pause motion" }).click();
+    expect(await name(".chalk-line")).toBe("none");
+    expect(await page.locator(".chalk-line").first().evaluate((e) => getComputedStyle(e).opacity)).toBe("1");
+    expect(await page.locator(".chalk-line[data-b]").first().evaluate((e) => getComputedStyle(e).opacity)).toBe("0");
+    expect(await page.locator(".chalk-smudge").first().evaluate((e) => getComputedStyle(e).opacity)).toBe("0");
+  });
+
+  test("below desktop width the chalk corner is gone and nothing scrolls sideways", async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 900 });
+    await page.goto("/");
+    await expect(page.locator(".chalk-board")).toBeHidden();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(768);
+    await page.setViewportSize({ width: 360, height: 800 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+  });
+});
