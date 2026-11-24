@@ -16,7 +16,6 @@ import { ArchiveFolder, BinderEdge } from "@/components/site/archive-folder";
 import { Principles } from "@/components/site/principles";
 import { Ambience } from "@/components/site/ambience";
 import { PageBoard } from "@/components/site/page-board";
-import { ChalkBoard } from "@/components/site/chalk-board";
 import { HeroMotion } from "@/components/site/hero-motion";
 import { Receipt } from "@/components/app/receipt";
 import { DISCLOSURES } from "@/content/disclosures";
@@ -156,7 +155,6 @@ export default function Home() {
             <p className="px-4 font-mono text-12 text-faint">
               <span className="num">Fig. 1</span> · Sample receipt from the mock flow. Not a real transaction.
             </p>
-            <ChalkBoard />
           </div>
         </section>
         <div className="relative z-10 mx-auto max-w-content px-gutter pb-16 lg:pb-24">

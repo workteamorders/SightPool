@@ -43,7 +43,7 @@ The hero background is decorative and starts after the page has loaded. Ways to 
 
 | What | How |
 | --- | --- |
-| Switch one effect off for everyone | `config/ambience.ts`: set `light`, `dust`, `sightlines`, `marker`, `rope`, `clock`, `caret`, `chalk`, `fall`, `flutter`, `board`, `depth`, `parallax` or `scroll` to `false`, then rebuild. |
+| Switch one effect off for everyone | `config/ambience.ts`: set `light`, `dust`, `sightlines`, `marker`, `rope`, `clock`, `caret`, `sketches`, `fall`, `flutter`, `board`, `depth`, `parallax` or `scroll` to `false`, then rebuild. |
 | Change intensity | `src/styles/tokens.css`: `--amb-light` (keep at or below 0.09 or re-check contrast), `--amb-cycle`, `--amb-line-cycle`, `--amb-parallax` (px, 3 to 6), `--amb-scroll`, `--amb-sweep` (keep at or below 0.04). |
 | Switch everything off for a visitor | The "Pause motion" button in the footer, or the system setting "reduce motion". The picture stays complete, only still. |
 | Block refresh interval | `REFRESH_MS` in `src/components/site/status-strip.tsx` (read-only request while the tab is visible). |

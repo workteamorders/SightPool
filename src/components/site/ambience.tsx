@@ -10,7 +10,7 @@ import { ArchiveClock } from "@/components/site/archive-clock";
  *
  *   light      lamp cone, soft glow, and a shade that drifts behind the folder (about 26s per sway)
  *   dust       specks drifting through the light
- *   fall       chalk dust falling slowly (6 specks on small screens); chalk-board.tsx adds a tray and more specks
+ *   fall       chalk dust falling slowly across the hero (6 specks on small screens)
  *   marker     a small square that travels up and down the ruler without pause (with the ruler, wide screens)
  *   clock      a UTC clock from the visitor's browser (tablet width up), labelled "Clock"
  *   sightlines a static ruler with coordinate marks, and one line traced now and then with a small marker. It

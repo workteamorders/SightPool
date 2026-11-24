@@ -146,42 +146,49 @@ test.describe("always-moving details", () => {
   });
 });
 
-test.describe("chalk corner", () => {
-  test.use({ viewport: { width: 1440, height: 1000 } });
+test.describe("chalk sketches", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
 
-  test("notes are written and wiped, dust falls, the note flutters, and everything is decorative", async ({ page }) => {
+  test("six blockchain sketches are written and wiped in the margins, never over the content", async ({ page }) => {
     await page.goto("/");
-    const board = page.locator(".chalk-board");
-    await expect(board).toHaveAttribute("aria-hidden", "true");
-    const name = (sel: string, pseudo?: string) => page.locator(sel).first().evaluate((e, p) => getComputedStyle(e, p ?? null).animationName, pseudo);
-    await expect.poll(() => name(".chalk-line")).toBe("sp-chalk");
-    await expect.poll(() => name(".chalk-smudge")).toBe("sp-smudge");
-    await expect.poll(() => name(".chalk-note")).toBe("sp-flutter");
-    await expect.poll(() => name(".chalk-note", "::after")).toBe("sp-curl");
-    await expect.poll(() => name(".chalk-fall")).toBe("sp-fall");
-    await expect.poll(() => name(".ambience-fall")).toBe("sp-fall");
-    // the notes only repeat statements the page already makes, and carry no figures
-    const texts = await page.locator(".chalk-line").allTextContents();
-    for (const t of texts) expect(t).not.toMatch(/\d|approved|verified|audited|safe/i);
-    // the board never overlaps the receipt or the figure caption
-    const b = await board.boundingBox();
-    const cap = await page.getByText("Sample receipt from the mock flow.").boundingBox();
-    expect(b!.y).toBeGreaterThanOrEqual(cap!.y + cap!.height);
-    // Pause motion: the picture rests, first notes whole, second notes out of sight
+    const sketches = page.locator(".sketch");
+    await expect(sketches).toHaveCount(6);
+    await expect(page.locator(".page-board")).toHaveAttribute("aria-hidden", "true");
+    const anim = (sel: string, pseudo?: string) => page.locator(sel).first().evaluate((e, p) => getComputedStyle(e, p ?? null).animationName, pseudo);
+    await expect.poll(() => anim(".sketch")).toBe("sp-sketch");
+    await expect.poll(() => anim(".board-note")).toBe("sp-flutter");
+    await expect.poll(() => anim(".board-note", "::after")).toBe("sp-curl");
+    // generic technology vocabulary only: no claims about the product, no figures
+    const text = (await page.locator(".sketch text").allTextContents()).join(" ");
+    expect(text).not.toMatch(/approved|verified|audited|safe|mixer|anonymous|untraceable|private|guarantee|\d{2,}/i);
+    for (const word of ["block", "merkle root", "nonce", "consensus"]) expect(text).toContain(word);
+    // they stay in the margins: left of the header logo and right of the header button, at any scroll position
+    const logo = { x: await page.locator("header a").evaluateAll((els) => Math.min(...els.map((e) => e.getBoundingClientRect()).filter((r) => r.width > 2).map((r) => r.x))) };
+    const cta = await page.locator("header").getByRole("link", { name: "Open the preview" }).boundingBox();
+    for (const y of [0, 600, 1800]) {
+      await page.evaluate((v) => window.scrollTo(0, v), y);
+      for (const box of await sketches.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { x: r.x, r: r.right, y: r.y, b: r.bottom }; }))) {
+        expect(box.b).toBeLessThanOrEqual(900);
+        expect(box.x >= cta!.x + cta!.width || box.r <= logo.x).toBe(true);
+      }
+    }
+    await expect(page.locator(".board-note")).toBeVisible();
+    // Pause motion: they rest fully drawn
     await page.getByRole("button", { name: "Pause motion" }).click();
-    expect(await name(".chalk-line")).toBe("none");
-    expect(await page.locator(".chalk-line").first().evaluate((e) => getComputedStyle(e).opacity)).toBe("1");
-    expect(await page.locator(".chalk-line[data-b]").first().evaluate((e) => getComputedStyle(e).opacity)).toBe("0");
-    expect(await page.locator(".chalk-smudge").first().evaluate((e) => getComputedStyle(e).opacity)).toBe("0");
+    expect(await anim(".sketch")).toBe("none");
+    expect(await sketches.first().evaluate((e) => getComputedStyle(e).clipPath)).toBe("none");
+    expect(await sketches.first().evaluate((e) => getComputedStyle(e).opacity)).toBe("1");
   });
 
-  test("below desktop width the chalk corner is gone and nothing scrolls sideways", async ({ page }) => {
-    await page.setViewportSize({ width: 768, height: 900 });
+  test("below 90rem the margins are gone, so are the sketches, and nothing scrolls sideways", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/");
-    await expect(page.locator(".chalk-board")).toBeHidden();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(768);
-    await page.setViewportSize({ width: 360, height: 800 });
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+    await expect(page.locator(".sketch").first()).toBeHidden();
+    await expect(page.locator(".board-note")).toBeHidden();
+    for (const width of [768, 360]) {
+      await page.setViewportSize({ width, height: 800 });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    }
   });
 });
 

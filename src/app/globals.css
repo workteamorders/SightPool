@@ -767,88 +767,60 @@
   }
 
   /* Chalk dust falling across the hero: cooler and whiter than the warm specks that rise through the lamp light. */
-  .ambience-fall,
-  .chalk-fall {
+  .ambience-fall {
     position: absolute;
     border-radius: 9999px;
     background: rgb(237 239 236);
     opacity: 0;
   }
-  [data-live] .ambience-fall,
-  [data-live] .chalk-fall {
+  [data-live] .ambience-fall {
     animation: sp-fall 20s linear infinite;
   }
 
-  /* The chalk corner under the hero figure (desktop width): notes written and wiped in turn, the smudges the eraser
-     leaves, a tray where the dust settles, and a pinned paper note. Fixed height, so nothing shifts. At rest the first
-     note of each line is whole and everything else is out of sight. */
-  .chalk-board {
+  /* Chalk sketches in the margins of the board (90rem and wider, where the page leaves room beside its content) and a
+     pinned note. Both live in the fixed board layer. Sketches rest fully drawn without animation; before the page is
+     live they are not shown, so nothing flashes. Each is written with a stepped clip, held, and wiped from the left. */
+  .sketch {
     display: none;
-    position: relative;
-    height: 9rem;
-    margin-top: var(--sp-4);
-    pointer-events: none;
+    position: absolute;
+    overflow: visible;
+    color: rgb(237 239 236 / 0.75);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transform: rotate(var(--rot, 0deg));
+    opacity: 0;
   }
-  @media (min-width: 64rem) {
-    .chalk-board {
+  .sketch[data-side="left"] {
+    left: 76px;
+  }
+  .sketch[data-side="right"] {
+    right: 36px;
+  }
+  .sketch text {
+    font-family: var(--font-code);
+    font-size: var(--fs-12);
+    fill: currentColor;
+    stroke: none;
+  }
+  html[data-live] .sketch {
+    opacity: 1;
+    animation: sp-sketch 50s linear infinite backwards;
+  }
+  @media (min-width: 90rem) {
+    .sketch {
       display: block;
     }
   }
-  .chalk-line {
+  .board-note {
+    display: none;
     position: absolute;
-    left: 0;
-    padding-bottom: 5px;
-    font-family: var(--font-code);
-    font-size: var(--fs-14);
-    line-height: 1.3;
-    white-space: nowrap;
-    color: var(--text-muted);
-    transform: rotate(-1.2deg);
-    transform-origin: 0 50%;
-    opacity: 0;
-  }
-  .chalk-line::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 70%;
-    height: 1px;
-    background: var(--text-faint);
-    opacity: 0.7;
-  }
-  [data-live] .chalk-line:not([data-b]) {
-    opacity: 1;
-  }
-  [data-live] .chalk-line {
-    animation: sp-chalk 36s linear infinite backwards;
-  }
-  .chalk-smudge {
-    position: absolute;
-    left: -0.5rem;
-    width: 15rem;
-    height: 1.9rem;
-    background: radial-gradient(ellipse at 50% 50%, rgb(237 239 236 / 0.5), transparent 70%);
-    opacity: 0;
-  }
-  [data-live] .chalk-smudge {
-    animation: sp-smudge 18s ease-out infinite;
-  }
-  .chalk-tray {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 5px;
-    border-bottom: 1px solid var(--line-control);
-    background: linear-gradient(180deg, transparent, rgb(237 239 236 / 0.09));
-  }
-  .chalk-note {
-    position: absolute;
-    top: 0.25rem;
-    right: 0;
-    width: 6.5rem;
-    height: 5.5rem;
+    top: 77vh;
+    left: 76px;
+    width: 5rem;
+    height: 4.5rem;
     padding: 1.1rem 0.6rem 0.5rem;
     background-image:
       repeating-linear-gradient(180deg, transparent 0 15px, var(--line) 15px 16px),
@@ -860,7 +832,12 @@
     transform-origin: 14px 9px;
     filter: drop-shadow(0 4px 4px rgb(0 0 0 / 0.4));
   }
-  .chalk-note::after {
+  @media (min-width: 90rem) {
+    .board-note {
+      display: block;
+    }
+  }
+  .board-note::after {
     content: "";
     position: absolute;
     right: -1px;
@@ -870,14 +847,14 @@
     background: linear-gradient(135deg, transparent 50%, var(--paper-2) 50%);
     transform-origin: 100% 100%;
   }
-  .chalk-note-label {
+  .board-note-label {
     display: block;
     font-family: var(--font-code);
     font-size: var(--fs-12);
     line-height: 1.2;
     color: var(--text-muted);
   }
-  .chalk-pin {
+  .board-pin {
     position: absolute;
     top: 5px;
     left: 9px;
@@ -887,10 +864,10 @@
     background: var(--brass);
     box-shadow: 1px 2px 2px rgb(0 0 0 / 0.5);
   }
-  [data-live] .chalk-note {
+  html[data-live] .board-note {
     animation: sp-flutter 5.5s ease-in-out infinite alternate;
   }
-  [data-live] .chalk-note::after {
+  html[data-live] .board-note::after {
     animation: sp-curl 3.3s ease-in-out infinite alternate;
   }
 
@@ -1155,40 +1132,22 @@
       opacity: 0;
     }
   }
-  @keyframes sp-chalk {
+  @keyframes sp-sketch {
     0% {
       clip-path: inset(0 100% 0 0);
-      opacity: 1;
-      animation-timing-function: steps(var(--n), end);
+      animation-timing-function: steps(24, end);
     }
-    8% {
+    12% {
       clip-path: inset(0 0 0 0);
-      opacity: 1;
       animation-timing-function: linear;
     }
-    42% {
+    72% {
       clip-path: inset(0 0 0 0);
-      opacity: 1;
       animation-timing-function: ease-in-out;
     }
-    49%,
+    80%,
     100% {
       clip-path: inset(0 0 0 100%);
-      opacity: 1;
-    }
-  }
-  @keyframes sp-smudge {
-    0%,
-    84% {
-      opacity: 0;
-      transform: translate3d(0, 0, 0) scaleX(1);
-    }
-    90% {
-      opacity: 0.1;
-    }
-    100% {
-      opacity: 0;
-      transform: translate3d(1.5rem, -0.4rem, 0) scaleX(1.25);
     }
   }
   @keyframes sp-flutter {
