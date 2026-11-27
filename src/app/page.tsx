@@ -16,6 +16,7 @@ import { ArchiveFolder, BinderEdge } from "@/components/site/archive-folder";
 import { Principles } from "@/components/site/principles";
 import { Ambience } from "@/components/site/ambience";
 import { PageBoard } from "@/components/site/page-board";
+import { PageMargins } from "@/components/site/page-margins";
 import { HeroMotion } from "@/components/site/hero-motion";
 import { Receipt } from "@/components/app/receipt";
 import { DISCLOSURES } from "@/content/disclosures";
@@ -98,8 +99,9 @@ const FAQ: { q: string; a: React.ReactNode }[] = [
 
 export default function Home() {
   return (
-    <>
+    <div className="relative">
       <PageBoard />
+      <PageMargins />
       {/* 1. What it is, for whom, proof, one action */}
       <div className="hero-stage relative" data-stage>
         <HeroMotion />
@@ -310,6 +312,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }

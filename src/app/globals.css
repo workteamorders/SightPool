@@ -777,17 +777,26 @@
     animation: sp-fall 20s linear infinite;
   }
 
-  /* Chalk sketches in the margins of the board (90rem and wider, where the page leaves room beside its content) and a
-     pinned note. Both live in the fixed board layer. Sketches rest fully drawn without animation; before the page is
-     live they are not shown, so nothing flashes. Each is written with a stepped clip, held, and wiped from the left. */
+  /* Chalk sketches in the margins of the landing page (90rem and wider, where the page leaves room beside its content)
+     and a pinned note. They belong to the page: they scroll with it. Each sketch is drawn line by line, like chalk: every
+     stroke is drawn in turn along its length (pathLength is 1, so the dash trick works for any stroke), every word is
+     written letter by letter with a stepped clip, and --d and --t give each element its start and duration. The cycle
+     (draw, hold, wipe from the left, pause) is run by sketch-draw.tsx through data-phase, only while a sketch is on
+     screen. Without data-phase a sketch rests fully drawn; without data-ready it is not shown at all, so nothing flashes. */
+  .page-margins {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
   .sketch {
     display: none;
     position: absolute;
     overflow: visible;
-    color: rgb(237 239 236 / 0.75);
+    color: rgb(237 239 236 / 0.8);
     fill: none;
     stroke: currentColor;
-    stroke-width: 1.4;
+    stroke-width: 1.5;
     stroke-linecap: round;
     stroke-linejoin: round;
     transform: rotate(var(--rot, 0deg));
@@ -799,15 +808,29 @@
   .sketch[data-side="right"] {
     right: 36px;
   }
+  .sketch path {
+    stroke-dasharray: 1 2;
+  }
   .sketch text {
     font-family: var(--font-code);
     font-size: var(--fs-12);
     fill: currentColor;
     stroke: none;
   }
-  html[data-live] .sketch {
+  .sketch[data-ready] {
     opacity: 1;
-    animation: sp-sketch 50s linear infinite backwards;
+  }
+  .sketch[data-phase="idle"] {
+    opacity: 0;
+  }
+  .sketch[data-phase="draw"] path {
+    animation: sp-draw var(--t) ease-in-out var(--d) both;
+  }
+  .sketch[data-phase="draw"] text {
+    animation: sp-type var(--t) steps(var(--n), end) var(--d) both;
+  }
+  .sketch[data-phase="wipe"] {
+    animation: sp-wipe 2.4s ease-in-out forwards;
   }
   @media (min-width: 90rem) {
     .sketch {
@@ -817,7 +840,7 @@
   .board-note {
     display: none;
     position: absolute;
-    top: 77vh;
+    top: 14%;
     left: 76px;
     width: 5rem;
     height: 4.5rem;
@@ -978,6 +1001,10 @@
   /* Motion off: the system asks for reduced motion, or Pause motion is on. Every layer stays at its resting state. */
   @media (prefers-reduced-motion: reduce) {
     .page-board *,
+    .sketch,
+    .sketch *,
+    .board-note,
+    .board-note::after,
     [data-stage] *,
     [data-stage] *::before,
     [data-stage] *::after {
@@ -985,6 +1012,10 @@
     }
   }
   html[data-motion="paused"] .page-board *,
+  html[data-motion="paused"] .sketch,
+  html[data-motion="paused"] .sketch *,
+  html[data-motion="paused"] .board-note,
+  html[data-motion="paused"] .board-note::after,
   html[data-motion="paused"] [data-stage] *,
   html[data-motion="paused"] [data-stage] *::before,
   html[data-motion="paused"] [data-stage] *::after,
@@ -1132,21 +1163,32 @@
       opacity: 0;
     }
   }
-  @keyframes sp-sketch {
+  @keyframes sp-draw {
     0% {
-      clip-path: inset(0 100% 0 0);
-      animation-timing-function: steps(24, end);
+      stroke-dashoffset: 1;
+      opacity: 0;
     }
-    12% {
-      clip-path: inset(0 0 0 0);
-      animation-timing-function: linear;
+    1% {
+      opacity: 1;
     }
-    72% {
-      clip-path: inset(0 0 0 0);
-      animation-timing-function: ease-in-out;
-    }
-    80%,
     100% {
+      stroke-dashoffset: 0;
+      opacity: 1;
+    }
+  }
+  @keyframes sp-type {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+  @keyframes sp-wipe {
+    from {
+      clip-path: inset(0 0 0 0);
+    }
+    to {
       clip-path: inset(0 0 0 100%);
     }
   }

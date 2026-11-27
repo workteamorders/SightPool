@@ -21,12 +21,13 @@ export const AMBIENCE = {
   /** A page-wide layer that stays in view while scrolling: chalk dust drifting through the whole viewport and a soft
    *  band of light that sweeps slowly across the board (landing page only). */
   board: true,
-  /** Chalk sketches of how a blockchain is built (blocks linked by hashes, a merkle tree, a block header), written and
-   *  wiped in turn in the margins of the board, from 90rem wide. Generic drawings, no figures, no claims. */
+  /** Chalk sketches of how a blockchain is built (blocks linked by hashes, a merkle tree, a block header), in the margins
+   *  of the page from 90rem wide. They scroll with the page and are drawn line by line when they come into view. Generic
+   *  drawings, no figures, no claims. */
   sketches: true,
   /** Chalk dust falling slowly across the hero. */
   fall: true,
-  /** A small paper note pinned in the left margin whose free edge lifts and settles (from 90rem wide). */
+  /** A small paper note pinned in the left margin of the page whose free edge lifts and settles (from 90rem wide). */
   flutter: true,
   /** Outlined sheet silhouettes and registration marks behind the receipt. */
   depth: true,

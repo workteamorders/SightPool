@@ -149,35 +149,45 @@ test.describe("always-moving details", () => {
 test.describe("chalk sketches", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test("six blockchain sketches are written and wiped in the margins, never over the content", async ({ page }) => {
+  test("twelve blockchain sketches belong to the page, are drawn line by line when they come into view, and stay in the margins", async ({ page }) => {
     await page.goto("/");
     const sketches = page.locator(".sketch");
-    await expect(sketches).toHaveCount(6);
-    await expect(page.locator(".page-board")).toHaveAttribute("aria-hidden", "true");
-    const anim = (sel: string, pseudo?: string) => page.locator(sel).first().evaluate((e, p) => getComputedStyle(e, p ?? null).animationName, pseudo);
-    await expect.poll(() => anim(".sketch")).toBe("sp-sketch");
-    await expect.poll(() => anim(".board-note")).toBe("sp-flutter");
-    await expect.poll(() => anim(".board-note", "::after")).toBe("sp-curl");
+    await expect(sketches).toHaveCount(12);
+    await expect(page.locator(".page-margins")).toHaveAttribute("aria-hidden", "true");
+    // they are part of the page: they scroll with it
+    expect(await sketches.first().evaluate((e) => getComputedStyle(e).position)).toBe("absolute");
+    const docTop = () => sketches.first().evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
+    const before = await docTop();
+    await page.evaluate(() => window.scrollTo(0, 400));
+    expect(Math.abs((await docTop()) - before)).toBeLessThan(2);
     // generic technology vocabulary only: no claims about the product, no figures
-    const text = (await page.locator(".sketch text").allTextContents()).join(" ");
+    const text = (await sketches.locator("text").allTextContents()).join(" ");
     expect(text).not.toMatch(/approved|verified|audited|safe|mixer|anonymous|untraceable|private|guarantee|\d{2,}/i);
     for (const word of ["block", "merkle root", "nonce", "consensus"]) expect(text).toContain(word);
-    // they stay in the margins: left of the header logo and right of the header button, at any scroll position
-    const logo = { x: await page.locator("header a").evaluateAll((els) => Math.min(...els.map((e) => e.getBoundingClientRect()).filter((r) => r.width > 2).map((r) => r.x))) };
+    // they stay in the margins: left of the header logo, or right of the header button
+    const logoX = await page.locator("header a").evaluateAll((els) => Math.min(...els.map((e) => e.getBoundingClientRect()).filter((r) => r.width > 2).map((r) => r.x)));
     const cta = await page.locator("header").getByRole("link", { name: "Open the preview" }).boundingBox();
-    for (const y of [0, 600, 1800]) {
-      await page.evaluate((v) => window.scrollTo(0, v), y);
-      for (const box of await sketches.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { x: r.x, r: r.right, y: r.y, b: r.bottom }; }))) {
-        expect(box.b).toBeLessThanOrEqual(900);
-        expect(box.x >= cta!.x + cta!.width || box.r <= logo.x).toBe(true);
-      }
+    for (const box of await sketches.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { x: r.x, r: r.right }; }))) {
+      expect(box.x >= cta!.x + cta!.width || box.r <= logoX).toBe(true);
     }
-    await expect(page.locator(".board-note")).toBeVisible();
-    // Pause motion: they rest fully drawn
+    // the first sketch is drawn stroke by stroke: shortly after it starts, the first stroke is further along than the last
+    const first = sketches.first();
+    await first.scrollIntoViewIfNeeded();
+    await expect(first).toHaveAttribute("data-phase", "draw");
+    const offsets = () => first.locator("path").evaluateAll((ps) => ps.map((p) => parseFloat(getComputedStyle(p).strokeDashoffset)));
+    await page.waitForTimeout(900);
+    const early = await offsets();
+    const lastStroke = early[early.length - 1]!;
+    expect(lastStroke).toBeGreaterThan(0.99);
+    expect(early[0]!).toBeLessThan(lastStroke);
+    // then it is whole, and held
+    await expect.poll(() => first.getAttribute("data-phase"), { timeout: 20000 }).toBeNull();
+    expect((await offsets()).every((v) => v === 0)).toBe(true);
+    // Pause motion: it rests, fully drawn, and no cycle runs
     await page.getByRole("button", { name: "Pause motion" }).click();
-    expect(await anim(".sketch")).toBe("none");
-    expect(await sketches.first().evaluate((e) => getComputedStyle(e).clipPath)).toBe("none");
-    expect(await sketches.first().evaluate((e) => getComputedStyle(e).opacity)).toBe("1");
+    await expect(first).not.toHaveAttribute("data-phase", /.+/);
+    expect(await first.locator("path").first().evaluate((e) => getComputedStyle(e).animationName)).toBe("none");
+    await expect(page.locator(".board-note")).toBeVisible();
   });
 
   test("below 90rem the margins are gone, so are the sketches, and nothing scrolls sideways", async ({ page }) => {

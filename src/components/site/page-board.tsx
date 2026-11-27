@@ -1,13 +1,12 @@
 import type { CSSProperties } from "react";
 import { AMBIENCE } from "@config/ambience";
-import { BoardSketches } from "@/components/site/board-sketches";
 
 /**
  * The board itself: a layer fixed to the viewport behind the whole landing page, so something is always moving in view
  * wherever the visitor has scrolled. Chalk dust drifts slowly through the viewport and a soft band of light sweeps across it
  * now and then. Decorative only and hidden from assistive technology; it never takes pointer events, sits behind all
  * content, and carries no data. Without animation (reduced motion, Pause motion) it rests out of sight. Switch:
- * config/ambience.ts (board; sketches and flutter inside it); strength of the light band: --amb-sweep in tokens.css.
+ * config/ambience.ts (board); strength of the light band: --amb-sweep in tokens.css.
  */
 const SPECKS = Array.from({ length: 36 }, (_, i) => {
   const r = (n: number) => {
@@ -31,13 +30,6 @@ export function PageBoard() {
   return (
     <div aria-hidden className="page-board">
       <span className="page-board-sweep" />
-      <BoardSketches />
-      {AMBIENCE.flutter && (
-        <div className="board-note paper">
-          <span className="board-pin" />
-          <span className="board-note-label">Note</span>
-        </div>
-      )}
       {SPECKS.map((p, i) => (
         <span
           key={i}
