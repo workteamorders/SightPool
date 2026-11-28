@@ -146,55 +146,120 @@ test.describe("always-moving details", () => {
   });
 });
 
-test.describe("chalk sketches", () => {
+test.describe("chalk drawings", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test("twelve blockchain sketches belong to the page, are drawn line by line when they come into view, and stay in the margins", async ({ page }) => {
+  test("many places in the margins draw something different each time, stroke by stroke, then an eraser wipes it", async ({ page }) => {
+    await page.addInitScript(() => {
+      const seen: string[] = [];
+      (window as unknown as { __seen: string[] }).__seen = seen;
+      new MutationObserver((list) => {
+        for (const m of list) m.addedNodes.forEach((n) => {
+          const e = n as SVGElement;
+          if (e.classList?.contains("sketch")) {
+            const slot = e.parentElement!;
+            seen.push(`${Array.from(slot.parentElement!.children).indexOf(slot)}|${e.dataset.art}|${e.dataset.words}`);
+          }
+        });
+      }).observe(document, { childList: true, subtree: true });
+    });
+    await page.clock.install();
     await page.goto("/");
-    const sketches = page.locator(".sketch");
-    await expect(sketches).toHaveCount(12);
+    const slots = page.locator(".sketch-slot");
+    expect(await slots.count()).toBeGreaterThanOrEqual(80);
     await expect(page.locator(".page-margins")).toHaveAttribute("aria-hidden", "true");
-    // they are part of the page: they scroll with it
-    expect(await sketches.first().evaluate((e) => getComputedStyle(e).position)).toBe("absolute");
-    const docTop = () => sketches.first().evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
+    // the places belong to the page: they scroll with it
+    const docTop = () => slots.first().evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
     const before = await docTop();
-    await page.evaluate(() => window.scrollTo(0, 400));
+    await page.evaluate(() => window.scrollTo(0, 300));
     expect(Math.abs((await docTop()) - before)).toBeLessThan(2);
-    // generic technology vocabulary only: no claims about the product, no figures
-    const text = (await sketches.locator("text").allTextContents()).join(" ");
-    expect(text).not.toMatch(/approved|verified|audited|safe|mixer|anonymous|untraceable|private|guarantee|\d{2,}/i);
-    for (const word of ["block", "merkle root", "nonce", "consensus"]) expect(text).toContain(word);
+    await page.evaluate(() => window.scrollTo(0, 0));
     // they stay in the margins: left of the header logo, or right of the header button
     const logoX = await page.locator("header a").evaluateAll((els) => Math.min(...els.map((e) => e.getBoundingClientRect()).filter((r) => r.width > 2).map((r) => r.x)));
     const cta = await page.locator("header").getByRole("link", { name: "Open the preview" }).boundingBox();
-    for (const box of await sketches.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { x: r.x, r: r.right }; }))) {
+    for (const box of await slots.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { x: r.x, r: r.right }; }))) {
       expect(box.x >= cta!.x + cta!.width || box.r <= logoX).toBe(true);
     }
-    // the first sketch is drawn stroke by stroke: shortly after it starts, the first stroke is further along than the last
-    const first = sketches.first();
-    await first.scrollIntoViewIfNeeded();
-    await expect(first).toHaveAttribute("data-phase", "draw");
-    const offsets = () => first.locator("path").evaluateAll((ps) => ps.map((p) => parseFloat(getComputedStyle(p).strokeDashoffset)));
-    await page.waitForTimeout(900);
+    // several are drawing at once while they are on screen
+    await page.clock.runFor(2500);
+    await expect.poll(() => page.locator(".sketch").count()).toBeGreaterThanOrEqual(3);
+    const drawing = page.locator('.sketch[data-phase="draw"]').first();
+    await expect(drawing).toBeVisible();
+    // drawn by hand: curved strokes, traced twice, letters as strokes (no font text)
+    expect(await drawing.locator("path").evaluateAll((ps) => ps.some((p) => (p.getAttribute("d") ?? "").includes("C")))).toBe(true);
+    expect(await drawing.locator("path.b").count()).toBeGreaterThan(0);
+    expect(await drawing.locator("path.l").count()).toBeGreaterThan(0); // capitals, written thick
+    expect(await drawing.locator("text").count()).toBe(0);
+    // stroke by stroke: early on, the first stroke is further along than the last
+    const offsets = () => drawing.locator("path").evaluateAll((ps) => ps.map((p) => parseFloat(getComputedStyle(p).strokeDashoffset)));
     const early = await offsets();
-    const lastStroke = early[early.length - 1]!;
-    expect(lastStroke).toBeGreaterThan(0.99);
-    expect(early[0]!).toBeLessThan(lastStroke);
-    // then it is whole, and held
-    await expect.poll(() => first.getAttribute("data-phase"), { timeout: 20000 }).toBeNull();
-    expect((await offsets()).every((v) => v === 0)).toBe(true);
-    // Pause motion: it rests, fully drawn, and no cycle runs
+    expect(early[early.length - 1]!).toBeGreaterThan(0.99);
+    // a long run: the eraser wipes, and the same places show different drawings
+    let wiped = false;
+    for (let i = 0; i < 40; i++) {
+      await page.clock.runFor(2500);
+      if (await page.locator('.sketch[data-phase="wipe"] .sk-eraser').count()) {
+        wiped = true;
+        const eraser = page.locator('.sketch[data-phase="wipe"] .sk-eraser').first();
+        expect(await eraser.evaluate((e) => getComputedStyle(e).animationName)).toContain("sp-reveal");
+        expect(await page.locator('.sketch[data-phase="wipe"] .sk-reveal').first().evaluate((e) => getComputedStyle(e).animationName)).toBe("sp-reveal");
+        break;
+      }
+    }
+    expect(wiped).toBe(true);
+    // what the eraser leaves: the ink is gone, the powder and streaks stay, and later fade under the next drawing
+    let ghost = false;
+    for (let i = 0; i < 30 && !ghost; i++) {
+      await page.clock.runFor(1000);
+      ghost = (await page.locator('.sketch[data-phase="ghost"]').count()) > 0;
+    }
+    expect(ghost).toBe(true);
+    const left = page.locator('.sketch[data-phase="ghost"]').first();
+    expect(await left.locator(".sk-ink").evaluate((e) => getComputedStyle(e).display)).toBe("none");
+    expect(await left.locator(".sk-smudge").evaluate((e) => getComputedStyle(e).opacity)).toBe("1");
+    expect(await left.locator(".sk-smudge path.streak").count()).toBeGreaterThanOrEqual(3);
+    let fading = false;
+    for (let i = 0; i < 30 && !fading; i++) {
+      await page.clock.runFor(1000);
+      fading = (await page.locator('.sketch[data-phase="fade"]').count()) > 0;
+    }
+    expect(fading).toBe(true);
+    expect(await page.locator('.sketch[data-phase="fade"] .sk-smudge').first().evaluate((e) => getComputedStyle(e).animationName)).toBe("sp-smudge-fade");
+    await page.clock.runFor(60_000);
+    const seen = await page.evaluate(() => (window as unknown as { __seen: string[] }).__seen);
+    expect(seen.length).toBeGreaterThanOrEqual(10);
+    // in each place, the next drawing is never the same kind as the one before
+    const bySlot = new Map<string, string[]>();
+    for (const entry of seen) {
+      const [slot, art] = entry.split("|") as [string, string];
+      bySlot.set(slot, [...(bySlot.get(slot) ?? []), art]);
+    }
+    let repeats = 0;
+    let steps = 0;
+    for (const arts of bySlot.values()) for (let i = 1; i < arts.length; i++) (steps += 1, arts[i] === arts[i - 1] && (repeats += 1));
+    expect(steps).toBeGreaterThanOrEqual(4);
+    expect(repeats).toBe(0);
+    // generic technology vocabulary only: no claims about the product, no figures
+    expect(seen.map((e) => e.split("|")[2]).join(" ")).not.toMatch(/approved|verified|audited|safe|mixer|anonymous|untraceable|private|guarantee|\d{2,}/i);
+  });
+
+  test("Pause motion: drawings rest, finished, and nothing is drawn or wiped", async ({ page }) => {
+    await page.goto("/");
+    await expect.poll(() => page.locator(".sketch").count(), { timeout: 15_000 }).toBeGreaterThanOrEqual(2); // each slot starts after a random delay of up to 6 s
     await page.getByRole("button", { name: "Pause motion" }).click();
-    await expect(first).not.toHaveAttribute("data-phase", /.+/);
-    expect(await first.locator("path").first().evaluate((e) => getComputedStyle(e).animationName)).toBe("none");
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect.poll(() => page.locator(".sketch").count()).toBeGreaterThanOrEqual(2);
+    expect(await page.locator(".sketch[data-phase]").count()).toBe(0);
+    expect(await page.locator(".sketch path").first().evaluate((e) => getComputedStyle(e).animationName)).toBe("none");
     await expect(page.locator(".board-note")).toBeVisible();
   });
 
-  test("below 90rem the margins are gone, so are the sketches, and nothing scrolls sideways", async ({ page }) => {
+  test("below 90rem the margins are gone, so are the drawings, and nothing scrolls sideways", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/");
-    await expect(page.locator(".sketch").first()).toBeHidden();
+    await expect(page.locator(".sketch-slot").first()).toBeHidden();
     await expect(page.locator(".board-note")).toBeHidden();
+    expect(await page.locator(".sketch").count()).toBe(0);
     for (const width of [768, 360]) {
       await page.setViewportSize({ width, height: 800 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);

@@ -777,65 +777,143 @@
     animation: sp-fall 20s linear infinite;
   }
 
-  /* Chalk sketches in the margins of the landing page (90rem and wider, where the page leaves room beside its content)
-     and a pinned note. They belong to the page: they scroll with it. Each sketch is drawn line by line, like chalk: every
-     stroke is drawn in turn along its length (pathLength is 1, so the dash trick works for any stroke), every word is
-     written letter by letter with a stepped clip, and --d and --t give each element its start and duration. The cycle
-     (draw, hold, wipe from the left, pause) is run by sketch-draw.tsx through data-phase, only while a sketch is on
-     screen. Without data-phase a sketch rests fully drawn; without data-ready it is not shown at all, so nothing flashes. */
+  /* Chalk in the margins of the landing page (90rem and wider, where the page leaves room beside its content), and a
+     pinned note. They belong to the page: they scroll with it. chalk-writer.tsx puts a drawing into a slot while the
+     slot is on screen, and runs its phases through data-phase: draw (each stroke is drawn in turn along its length;
+     pathLength is 1, so the dash trick works for any stroke; --d and --t give each path its start and duration), hold
+     (no phase: the finished drawing), wipe (an eraser sweeps across from the left, the chalk goes with it, a smudge
+     is left and fades). The grain mask breaks the lines up so they read as chalk, not as clean strokes. A drawing
+     without data-phase rests fully drawn, which is also what motion off shows. */
   .page-margins {
     position: absolute;
     inset: 0;
     z-index: -1;
     pointer-events: none;
   }
-  .sketch {
+  .sketch-slot {
     display: none;
     position: absolute;
+    width: 108px;
+    height: 132px;
+  }
+  .sketch-slot[data-side="left"] {
+    left: 76px;
+    width: 84px;
+  }
+  .sketch-slot[data-side="right"] {
+    right: 36px;
+  }
+  @media (min-width: 90rem) {
+    .sketch-slot {
+      display: block;
+    }
+  }
+  /* inner columns: against the content edge (the content is 1096px wide and centred), where very wide screens leave room */
+  .sketch-slot[data-col="inner"] {
+    display: none;
+  }
+  .sketch-slot[data-col="inner"][data-side="left"] {
+    left: auto;
+    right: calc(50% + 560px);
+  }
+  .sketch-slot[data-col="inner"][data-side="right"] {
+    right: auto;
+    left: calc(50% + 560px);
+    width: 108px;
+  }
+  @media (min-width: 115rem) {
+    .sketch-slot[data-col="inner"] {
+      display: block;
+    }
+  }
+  .sketch {
+    position: absolute;
+    left: -6px;
+    top: -6px;
     overflow: visible;
-    color: rgb(237 239 236 / 0.8);
+    color: rgb(237 239 236 / 0.92);
     fill: none;
     stroke: currentColor;
-    stroke-width: 1.5;
     stroke-linecap: round;
     stroke-linejoin: round;
     transform: rotate(var(--rot, 0deg));
-    opacity: 0;
-  }
-  .sketch[data-side="left"] {
-    left: 76px;
-  }
-  .sketch[data-side="right"] {
-    right: 36px;
+    -webkit-mask-image: url("/chalk-grain.png");
+    mask-image: url("/chalk-grain.png");
+    -webkit-mask-size: 64px 64px;
+    mask-size: 64px 64px;
   }
   .sketch path {
+    stroke-width: 2.4;
+    stroke-linecap: butt;
     stroke-dasharray: 1 2;
   }
-  .sketch text {
-    font-family: var(--font-code);
-    font-size: var(--fs-12);
-    fill: currentColor;
-    stroke: none;
+  .sketch path.l {
+    stroke-width: 3;
   }
-  .sketch[data-ready] {
-    opacity: 1;
+  .sketch path.b {
+    --o: 0.5;
+    stroke-width: 1.3;
+    opacity: var(--o);
   }
-  .sketch[data-phase="idle"] {
-    opacity: 0;
+  .sketch path.h {
+    --o: 0.09;
+    stroke-width: 5.2;
+    opacity: var(--o);
   }
   .sketch[data-phase="draw"] path {
     animation: sp-draw var(--t) ease-in-out var(--d) both;
   }
-  .sketch[data-phase="draw"] text {
-    animation: sp-type var(--t) steps(var(--n), end) var(--d) both;
+  .sk-eraser,
+  .sk-smudge {
+    opacity: 0;
   }
-  .sketch[data-phase="wipe"] {
-    animation: sp-wipe 2.4s ease-in-out forwards;
+  /* what the eraser leaves behind: a powder along the old strokes, and wide streaks where it passed */
+  .sk-smudge path {
+    stroke: rgb(237 239 236 / 0.15);
+    stroke-width: 6.5;
+    stroke-linecap: round;
+    stroke-dasharray: none;
+    opacity: 1;
   }
-  @media (min-width: 90rem) {
-    .sketch {
-      display: block;
-    }
+  .sk-smudge path.streak {
+    stroke: rgb(237 239 236 / 0.085);
+  }
+  .eraser-felt {
+    fill: var(--surface-3);
+    stroke: var(--line-strong);
+    stroke-width: 1;
+  }
+  .eraser-wood {
+    fill: var(--manila);
+    stroke: none;
+  }
+  .sketch[data-phase="wipe"] .sk-reveal {
+    animation: sp-reveal 2.6s ease-in-out forwards;
+  }
+  .sketch[data-phase="wipe"] .sk-eraser {
+    opacity: 1;
+    animation:
+      sp-reveal 2.6s ease-in-out forwards,
+      sp-eraser-out 0.6s ease-in 2.6s forwards;
+  }
+  .sketch[data-phase="wipe"] .sk-smudge {
+    opacity: 1;
+  }
+  /* after the wipe the ink is gone and the smudge is whole; with the next drawing it fades away underneath */
+  .sketch[data-phase="ghost"] .sk-reveal,
+  .sketch[data-phase="fade"] .sk-reveal {
+    transform: translateX(var(--run));
+  }
+  .sketch[data-phase="ghost"] .sk-ink,
+  .sketch[data-phase="fade"] .sk-ink {
+    display: none;
+  }
+  .sketch[data-phase="ghost"] .sk-smudge,
+  .sketch[data-phase="fade"] .sk-smudge {
+    opacity: 1;
+  }
+  .sketch[data-phase="fade"] .sk-smudge {
+    animation: sp-smudge-fade 7.5s ease-out forwards;
   }
   .board-note {
     display: none;
@@ -1169,27 +1247,29 @@
       opacity: 0;
     }
     1% {
-      opacity: 1;
+      opacity: var(--o, 1);
     }
     100% {
       stroke-dashoffset: 0;
+      opacity: var(--o, 1);
+    }
+  }
+  @keyframes sp-reveal {
+    to {
+      transform: translateX(var(--run));
+    }
+  }
+  @keyframes sp-eraser-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes sp-smudge-fade {
+    from {
       opacity: 1;
     }
-  }
-  @keyframes sp-type {
-    from {
-      clip-path: inset(0 100% 0 0);
-    }
     to {
-      clip-path: inset(0 0 0 0);
-    }
-  }
-  @keyframes sp-wipe {
-    from {
-      clip-path: inset(0 0 0 0);
-    }
-    to {
-      clip-path: inset(0 0 0 100%);
+      opacity: 0;
     }
   }
   @keyframes sp-flutter {

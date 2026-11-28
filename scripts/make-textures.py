@@ -1,4 +1,4 @@
-# Renders the two tileable grain textures in public/ from code (no stock or AI art): grain-dark.png (light specks
+# Renders the tileable grain textures in public/ from code (no stock or AI art): grain-dark.png (light specks
 # for the dark room) and grain-paper.png (aged blotches, fibres and specks for sheets). Fixed seed, so the output
 # is reproducible. Run: python3 scripts/make-textures.py
 import pathlib
@@ -45,4 +45,16 @@ paper = np.zeros((N, N, 4), np.uint8)
 paper[..., 0], paper[..., 1], paper[..., 2] = 92, 70, 34
 paper[..., 3] = np.clip(a, 0, 255).astype(np.uint8)
 Image.fromarray(paper, "RGBA").save(root / "public/grain-paper.png", optimize=True)
-print("wrote public/grain-dark.png and public/grain-paper.png")
+
+# Chalk: an alpha mask for the chalk sketches. White, mostly opaque, with small gaps and faint streaks, so a thin line
+# looks broken up and dusty like chalk instead of a clean vector stroke. Own seed, so it never changes the other two.
+M = 128
+r2 = np.random.default_rng(1618)
+holes = (r2.random((M, M)) < 0.15) * (0.4 + 0.6 * r2.random((M, M)))
+streak = norm(blur_tile(r2.random((M, M)), 1.6))
+chalk_a = np.clip((1 - holes * 0.92) * (0.7 + 0.3 * streak), 0, 1)
+chalk = np.zeros((M, M, 4), np.uint8)
+chalk[..., :3] = 255
+chalk[..., 3] = (chalk_a * 255).astype(np.uint8)
+Image.fromarray(chalk, "RGBA").save(root / "public/chalk-grain.png", optimize=True)
+print("wrote public/grain-dark.png, public/grain-paper.png and public/chalk-grain.png")

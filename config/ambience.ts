@@ -21,9 +21,9 @@ export const AMBIENCE = {
   /** A page-wide layer that stays in view while scrolling: chalk dust drifting through the whole viewport and a soft
    *  band of light that sweeps slowly across the board (landing page only). */
   board: true,
-  /** Chalk sketches of how a blockchain is built (blocks linked by hashes, a merkle tree, a block header), in the margins
-   *  of the page from 90rem wide. They scroll with the page and are drawn line by line when they come into view. Generic
-   *  drawings, no figures, no claims. */
+  /** Chalk drawings about how a blockchain is built, in the margins of the page from 90rem wide: 30 places that each
+   *  draw something different every time (strokes in turn, words letter by letter, held, then wiped with an eraser). They
+   *  scroll with the page. Generic drawings, no figures, no claims. */
   sketches: true,
   /** Chalk dust falling slowly across the hero. */
   fall: true,
