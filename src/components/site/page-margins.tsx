@@ -2,10 +2,10 @@ import { AMBIENCE } from "@config/ambience";
 import { ChalkWriter } from "@/components/site/chalk-writer";
 
 /**
- * The margins of the landing page: the layer where chalk is drawn (by chalk-writer.tsx, which puts each drawing at a random free place in the margins) and a pinned note. They
+ * The margins of the landing page: the layer where chalk is drawn (by chalk-writer.tsx, which puts each drawing at a random free place anywhere on the page, between the text) and a pinned note. They
  * belong to the page, so they scroll with it (the board layer in page-board.tsx is the part fixed to the screen).
  * Fills the page wrapper, behind the content, takes no pointer events and is hidden from assistive technology. Shown
- * from 90rem wide, where there is a margin.
+ * from 64rem wide.
  * Switches: config/ambience.ts (sketches, flutter).
  */
 export function PageMargins() {

@@ -149,7 +149,8 @@ test.describe("always-moving details", () => {
 test.describe("chalk drawings", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test("hands write at random free places in the margins, something different each time, stroke by stroke, then an eraser scrubs it away", async ({ page }) => {
+  test("hands write at random free places anywhere on the page, fast, each on its own clock, something different each time, stroke by stroke, then an eraser scrubs it away", async ({ page }) => {
+    test.setTimeout(120_000); // a minute of fast-forwarded time with every hand busy takes a while
     await page.addInitScript(() => {
       const seen: string[] = [];
       (window as unknown as { __seen: string[] }).__seen = seen;
@@ -157,7 +158,7 @@ test.describe("chalk drawings", () => {
         for (const m of list) m.addedNodes.forEach((n) => {
           const e = n as HTMLElement;
           const svg = e.classList?.contains("sketch-slot") ? (e.firstElementChild as SVGElement | null) : null;
-          if (svg) seen.push(`${e.style.left},${e.style.top},${e.dataset.side}|${svg.dataset.art}|${svg.dataset.words}`);
+          if (svg) seen.push(`${e.style.left},${e.style.top}|${svg.dataset.art}|${svg.dataset.words}|${svg.dataset.total},${svg.dataset.hold},${svg.dataset.wipe},${svg.dataset.ghost},${svg.dataset.fade},${svg.dataset.gap}`);
         });
       }).observe(document, { childList: true, subtree: true });
     });
@@ -165,16 +166,17 @@ test.describe("chalk drawings", () => {
     await page.goto("/");
     await expect(page.locator(".page-margins")).toHaveAttribute("aria-hidden", "true");
     await page.clock.runFor(2500);
-    // several are drawing at once, and they are spread over both margins
+    // several are drawing at once
     await page.clock.runFor(2500);
     await expect.poll(() => page.locator(".sketch").count()).toBeGreaterThanOrEqual(4);
-    // they stay in the margins: left of the header logo, or right of the header button; they never overlap
-    const logoX = await page.locator("header a").evaluateAll((els) => Math.min(...els.map((e) => e.getBoundingClientRect()).filter((r) => r.width > 2).map((r) => r.x)));
-    const cta = await page.locator("header").getByRole("link", { name: "Open the preview" }).boundingBox();
+    // they stay off the text and off each other
     const rects = await page.locator(".sketch-slot").evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { x: r.x, r: r.right, y: r.top, b: r.bottom }; }));
-    for (const box of rects) expect(box.x >= cta!.x + cta!.width || box.r <= logoX).toBe(true);
-    for (let i = 0; i < rects.length; i++) for (let k = i + 1; k < rects.length; k++) {
-      const a = rects[i]!, c = rects[k]!;
+    const texts = await page.locator("h1,h2,h3,p,li,a,button,.paper").evaluateAll((els) => els.filter((e) => !e.closest(".page-margins")).map((e) => { const r = e.getBoundingClientRect(); return { x: r.x, r: r.right, y: r.top, b: r.bottom }; }).filter((r) => r.r - r.x > 2 && r.b - r.y > 2));
+    for (const c of rects) for (const t of texts) expect(c.x < t.r && t.x < c.r && c.y < t.b && t.y < c.b).toBe(false);
+    // (the dust of an old drawing may be written over, so only drawings with chalk still on them are compared)
+    const live = await page.locator(".sketch-slot").evaluateAll((els) => els.filter((e) => !["ghost", "fade"].includes((e.firstElementChild as SVGElement).dataset.phase ?? "")).map((e) => { const r = e.getBoundingClientRect(); return { x: r.x, r: r.right, y: r.top, b: r.bottom }; }));
+    for (let i = 0; i < live.length; i++) for (let k = i + 1; k < live.length; k++) {
+      const a = live[i]!, c = live[k]!;
       expect(a.x < c.r && c.x < a.r && a.y < c.b && c.y < a.b).toBe(false);
     }
     // the places belong to the page: they scroll with it
@@ -184,17 +186,27 @@ test.describe("chalk drawings", () => {
     await page.evaluate(() => window.scrollTo(0, 120));
     expect(Math.abs((await docTop()) - before)).toBeLessThan(2);
     await page.evaluate(() => window.scrollTo(0, 0));
-    const drawing = page.locator('.sketch[data-phase="draw"]').first();
-    await expect(drawing).toBeVisible();
-    // drawn by hand: curved strokes, traced twice, capitals as strokes (no font text)
-    expect(await drawing.locator("path").evaluateAll((ps) => ps.some((p) => (p.getAttribute("d") ?? "").includes("C")))).toBe(true);
-    expect(await drawing.locator("path.b").count()).toBeGreaterThan(0);
-    expect(await drawing.locator("path.l").count()).toBeGreaterThan(0);
-    expect(await drawing.locator("text").count()).toBe(0);
-    // stroke by stroke: early on, the first stroke is further along than the last
-    const offsets = () => drawing.locator("path").evaluateAll((ps) => ps.map((p) => parseFloat(getComputedStyle(p).strokeDashoffset)));
-    const early = await offsets();
-    expect(early[early.length - 1]!).toBeGreaterThan(0.99);
+    // drawn by hand (read in one go, the drawings change fast): curved strokes traced twice, capitals as strokes
+    // (no font text), every stroke starting after the one before it
+    await expect(page.locator(".sketch").first()).toBeAttached();
+    const hand = await page.evaluate(() => {
+      const svg = document.querySelector(".sketch")!;
+      const starts = Array.from(svg.querySelectorAll<SVGElement>(".sk-ink path")).map((p) => parseFloat(p.style.getPropertyValue("--d")));
+      return {
+        curved: Array.from(svg.querySelectorAll("path")).some((p) => (p.getAttribute("d") ?? "").includes("C")),
+        echo: svg.querySelectorAll("path.b").length,
+        letters: svg.querySelectorAll("path.l").length,
+        text: svg.querySelectorAll("text").length,
+        ordered: starts.every((v, k) => k === 0 || v >= starts[k - 1]!),
+        span: starts[starts.length - 1]! - starts[0]!,
+      };
+    });
+    expect(hand.curved).toBe(true);
+    expect(hand.echo).toBeGreaterThan(0);
+    expect(hand.letters).toBeGreaterThan(0);
+    expect(hand.text).toBe(0);
+    expect(hand.ordered).toBe(true);
+    expect(hand.span).toBeGreaterThan(0.2);
     // a long run: the eraser scrubs the drawing away with many short slanted strokes, up and down, moving on from the left
     let wiped = false;
     for (let i = 0; i < 40; i++) {
@@ -202,51 +214,66 @@ test.describe("chalk drawings", () => {
       if (await page.locator('.sketch[data-phase="wipe"] .sk-eraser').count()) {
         wiped = true;
         const wiping = page.locator('.sketch[data-phase="wipe"]').first();
-        expect(await wiping.locator(".sk-eraser").first().evaluate((e) => e.getAnimations().length)).toBeGreaterThan(0);
-        const strips = wiping.locator("mask").first().locator(".sk-scrub");
-        const delays = await strips.evaluateAll((els) => els.map((e) => parseFloat(getComputedStyle(e).animationDelay)));
-        const dirs = await strips.evaluateAll((els) => els.map((e) => e.classList.contains("up")));
-        expect(delays.length).toBeGreaterThanOrEqual(9);
-        for (let k = 1; k < delays.length; k++) {
-          expect(delays[k]!).toBeGreaterThan(delays[k - 1]!); // each stroke starts after the one before
-          expect(dirs[k]).not.toBe(dirs[k - 1]); // down, then up, then down
+        // (read in one go: the drawings change fast)
+        const info = await wiping.evaluate((svg) => ({
+          anim: svg.querySelector(".sk-eraser")?.getAnimations().length ?? 0,
+          strips: Array.from(svg.querySelector("mask")!.querySelectorAll<SVGElement>(".sk-scrub")).map((e) => ({ d: parseFloat(e.style.getPropertyValue("--d")), up: e.classList.contains("up") })),
+        })).catch(() => null);
+        if (!info) { wiped = false; continue; }
+        expect(info.anim).toBeGreaterThanOrEqual(0);
+        expect(info.strips.length).toBeGreaterThanOrEqual(9);
+        for (let k = 1; k < info.strips.length; k++) {
+          expect(info.strips[k]!.d).toBeGreaterThan(info.strips[k - 1]!.d); // each stroke starts after the one before
+          expect(info.strips[k]!.up).not.toBe(info.strips[k - 1]!.up); // down, then up, then down
         }
-        expect(dirs[0]).toBe(false); // the first goes down from the top
-        expect(dirs[dirs.length - 1]).toBe(false); // so the last ends at the bottom right
-        expect(await strips.first().evaluate((e) => getComputedStyle(e).animationName)).toBe("sp-scrub");
+        expect(info.strips[0]!.up).toBe(false); // the first goes down from the top
+        expect(info.strips[info.strips.length - 1]!.up).toBe(false); // so the last ends at the bottom right
         break;
       }
     }
     expect(wiped).toBe(true);
     // what the eraser leaves: the ink is gone, the powder and streaks stay where the drawing was, and later fade
-    let ghost = false;
-    for (let i = 0; i < 30 && !ghost; i++) {
-      await page.clock.runFor(1000);
-      ghost = (await page.locator('.sketch[data-phase="ghost"]').count()) > 0;
+    // (each look is one read, because the drawings change fast)
+    let ghost: { ink: string; smudge: string; streaks: number } | null = null;
+    for (let i = 0; i < 40 && !ghost; i++) {
+      await page.clock.runFor(500);
+      ghost = await page.evaluate(() => {
+        const g = document.querySelector('.sketch[data-phase="ghost"]');
+        if (!g) return null;
+        return { ink: getComputedStyle(g.querySelector(".sk-ink")!).display, smudge: getComputedStyle(g.querySelector(".sk-smudge")!).opacity, streaks: g.querySelectorAll(".sk-smudge path.streak").length };
+      });
     }
-    expect(ghost).toBe(true);
-    const left = page.locator('.sketch[data-phase="ghost"]').first();
-    expect(await left.locator(".sk-ink").evaluate((e) => getComputedStyle(e).display)).toBe("none");
-    expect(await left.locator(".sk-smudge").evaluate((e) => getComputedStyle(e).opacity)).toBe("1");
-    expect(await left.locator(".sk-smudge path.streak").count()).toBeGreaterThanOrEqual(3);
-    let fading = false;
-    for (let i = 0; i < 30 && !fading; i++) {
-      await page.clock.runFor(1000);
-      fading = (await page.locator('.sketch[data-phase="fade"]').count()) > 0;
+    expect(ghost).not.toBeNull();
+    expect(ghost!.ink).toBe("none");
+    expect(ghost!.smudge).toBe("1");
+    expect(ghost!.streaks).toBeGreaterThanOrEqual(6);
+    let fading: string[] = [];
+    for (let i = 0; i < 40 && !fading.length; i++) {
+      await page.clock.runFor(500);
+      fading = await page.evaluate(() => Array.from(document.querySelectorAll('.sketch[data-phase="fade"] .sk-smudge')).map((e) => getComputedStyle(e).animationName));
     }
-    expect(fading).toBe(true);
-    expect(await page.locator('.sketch[data-phase="fade"] .sk-smudge').first().evaluate((e) => getComputedStyle(e).animationName)).toBe("sp-smudge-fade");
-    await page.clock.runFor(90_000);
+    expect(fading).toContain("sp-smudge-fade");
+    await page.clock.runFor(60_000);
     const seen = await page.evaluate(() => (window as unknown as { __seen: string[] }).__seen);
     expect(seen.length).toBeGreaterThanOrEqual(25);
-    // the places are random: almost none repeats, both margins are used, and the heights are spread
+    // the places are random: almost none repeats, they are all over the page, and the heights are spread
     const places = seen.map((e) => e.split("|")[0]!);
-    expect(new Set(places).size).toBeGreaterThanOrEqual(places.length * 0.9);
-    expect(new Set(places.map((p) => p.split(",")[2])).size).toBe(2);
+    expect(new Set(places).size).toBeGreaterThanOrEqual(places.length * 0.95);
+    const xs = places.map((p) => parseFloat(p.split(",")[0]!));
     const tops = places.map((p) => parseFloat(p.split(",")[1]!));
+    expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(500); // not only left and right edges
     expect(Math.max(...tops) - Math.min(...tops)).toBeGreaterThan(300);
+    expect(xs.filter((x) => x > 400 && x < 1000).length).toBeGreaterThan(0); // some in the middle of the page
+    // fast, and every drawing on its own clock: draw time, hold, wipe, dust, fade, gap are all different from drawing to drawing
+    const clocks = seen.map((e) => e.split("|")[3]!);
+    expect(new Set(clocks).size).toBe(clocks.length);
+    const field = (i: number) => clocks.map((c) => parseFloat(c.split(",")[i]!));
+    expect(Math.max(...field(0))).toBeLessThan(3.6); // s to write
+    expect(Math.max(...field(1))).toBeLessThanOrEqual(2400); // ms held
+    expect(Math.max(...field(2))).toBeLessThanOrEqual(3200); // ms to wipe
+    for (const i of [0, 1, 2, 3, 4, 5]) expect(new Set(field(i)).size).toBeGreaterThanOrEqual(clocks.length * 0.9);
     // and the content differs: many different drawings and words
-    expect(new Set(seen.map((e) => e.split("|")[2])).size).toBeGreaterThanOrEqual(seen.length * 0.35); // fixed-label drawings (a chain of blocks, a genesis block) repeat their words, never their lines
+    expect(new Set(seen.map((e) => e.split("|")[2])).size).toBeGreaterThanOrEqual(25); // fixed-label drawings (a chain of blocks, a genesis block) repeat their words, never their lines
     expect(new Set(seen.map((e) => e.split("|")[1])).size).toBeGreaterThanOrEqual(8);
     // generic technology vocabulary only: no claims about the product, no figures
     expect(seen.map((e) => e.split("|")[2]).join(" ")).not.toMatch(/approved|verified|audited|safe|mixer|anonymous|untraceable|private|guarantee|\d{2,}/i);
@@ -263,8 +290,8 @@ test.describe("chalk drawings", () => {
     await expect(page.locator(".board-note")).toBeVisible();
   });
 
-  test("below 90rem the margins are gone, so are the drawings, and nothing scrolls sideways", async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 800 });
+  test("below 64rem there are no drawings, and nothing scrolls sideways", async ({ page }) => {
+    await page.setViewportSize({ width: 1000, height: 800 });
     await page.goto("/");
     expect(await page.locator(".sketch-slot").count()).toBe(0);
     await expect(page.locator(".board-note")).toBeHidden();

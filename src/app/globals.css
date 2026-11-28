@@ -777,7 +777,7 @@
     animation: sp-fall 20s linear infinite;
   }
 
-  /* Chalk in the margins of the landing page (90rem and wider, where the page leaves room beside its content), and a
+  /* Chalk on the background of the landing page (64rem and wider), and a
      pinned note. They belong to the page: they scroll with it. chalk-writer.tsx puts a drawing into a slot while the
      slot is on screen, and runs its phases through data-phase: draw (each stroke is drawn in turn along its length;
      pathLength is 1, so the dash trick works for any stroke; --d and --t give each path its start and duration), hold
@@ -789,6 +789,7 @@
     inset: 0;
     z-index: -1;
     pointer-events: none;
+    overflow-x: clip; /* the dust box of a drawing near the right edge must not widen the page */
   }
   .sketch-slot {
     position: absolute;
@@ -835,14 +836,14 @@
   }
   /* what the eraser leaves behind: a powder along the old strokes, and wide streaks where it passed */
   .sk-smudge path {
-    stroke: rgb(237 239 236 / 0.15);
+    stroke: rgb(237 239 236 / 0.13);
     stroke-width: 6.5;
     stroke-linecap: round;
     stroke-dasharray: none;
     opacity: 1;
   }
   .sk-smudge path.streak {
-    stroke: rgb(237 239 236 / 0.085);
+    stroke: rgb(237 239 236 / 0.065);
   }
   .eraser-felt {
     fill: var(--surface-3);
@@ -865,7 +866,7 @@
     opacity: 0;
   }
   .sketch[data-phase="wipe"] .sk-scrub {
-    animation: sp-scrub 0.17s linear var(--d) forwards;
+    animation: sp-scrub var(--st, 0.1s) linear var(--d) forwards;
   }
   .sketch[data-phase="wipe"] .sk-eraser {
     opacity: 1;
@@ -887,7 +888,7 @@
     opacity: 1;
   }
   .sketch[data-phase="fade"] .sk-smudge {
-    animation: sp-smudge-fade 7.5s ease-out forwards;
+    animation: sp-smudge-fade var(--fade, 5s) ease-out forwards;
   }
   .board-note {
     display: none;

@@ -166,17 +166,20 @@ const VOCAB = [
 ];
 const FIELDS = ["parent hash", "merkle root", "timestamp", "nonce", "height", "version"];
 
+const pick = <T,>(r: Rng, from: T[]): T => from[Math.floor(r() * from.length)]!;
+/** x that centres a text of this size in a drawing of this width */
+const mid = (t: string, size: number, w: number) => Math.max(2, (w - textWidth(t, size)) / 2);
 type Maker = { name: string; w: number; make: (r: Rng, maxW: number) => Omit<Art, "name" | "w"> & { w?: number } };
 
 const chain: Maker = {
   name: "chain",
   w: 84,
   make: (r) => {
-    const labels = ["block n-1", "block n", "block n+1"];
+    const labels = pick(r, [["block n-1", "block n", "block n+1"], ["parent", "child", "tip"], ["prev", "this", "next"], ["slot 1", "slot 2", "slot 3"], ["old", "head", "new"]]);
     const s: Stroke[] = [];
     labels.forEach((t, i) => {
       s.push(...box(r, 4, 4 + i * 46, 76, 30));
-      s.push(...write(r, t, 13, 24 + i * 46, 0.7));
+      s.push(...write(r, t, mid(t, 0.7, 84), 24 + i * 46, 0.7));
       if (i < 2) s.push(arrow(r, [42, 50 + i * 46], [42, 35 + i * 46]));
     });
     return { words: labels.join(" "), h: 128, strokes: s };
@@ -186,8 +189,11 @@ const hashFn: Maker = {
   name: "hash",
   w: 84,
   make: (r) => {
-    const s: Stroke[] = [...write(r, "input", 6, 14, 0.85), arrow(r, [26, 20], [26, 35]), ring(r, 26, 49, 14, 13), ...write(r, "h()", 17, 54, 0.8), arrow(r, [26, 63], [26, 83]), ...box(r, 4, 85, 70, 24), ...write(r, "digest", 10, 102, 0.85)];
-    return { words: "input h digest", h: 114, strokes: s };
+    const inp = pick(r, ["input", "data", "message", "bytes"]);
+    const fn = pick(r, ["h()", "f()", "g()"]);
+    const out = pick(r, ["digest", "hash", "output"]);
+    const s: Stroke[] = [...write(r, inp, 6, 14, 0.85), arrow(r, [26, 20], [26, 35]), ring(r, 26, 49, 14, 13), ...write(r, fn, 17, 54, 0.8), arrow(r, [26, 63], [26, 83]), ...box(r, 4, 85, 70, 24), ...write(r, out, 10, 102, 0.85)];
+    return { words: `${inp} ${fn} ${out}`, h: 114, strokes: s };
   },
 };
 const nodes: Maker = {
@@ -202,35 +208,40 @@ const nodes: Maker = {
       s.push(line(r, [pa[0] + Math.cos(ang) * 8, pa[1] + Math.sin(ang) * 8], [pb[0] - Math.cos(ang) * 8, pb[1] - Math.sin(ang) * 8]));
     }
     for (const p of c) s.push(ring(r, p[0], p[1], 7, 7));
-    s.push(...write(r, "nodes", 18, 100, 0.85));
-    return { words: "nodes", h: 104, strokes: s };
+    const label = pick(r, ["nodes", "peers", "network", "mesh"]);
+    s.push(...write(r, label, mid(label, 0.85, 84), 100, 0.85));
+    return { words: label, h: 104, strokes: s };
   },
 };
 const fork: Maker = {
   name: "fork",
   w: 84,
   make: (r) => {
-    const s: Stroke[] = [...box(r, 2, 38, 18, 14), arrow(r, [21, 45], [27, 45]), ...box(r, 28, 38, 18, 14), arrow(r, [47, 42], [56, 26]), ...box(r, 57, 14, 22, 14), arrow(r, [47, 49], [56, 64]), ...box(r, 57, 58, 22, 14), ...write(r, "fork", 24, 98, 0.9)];
-    return { words: "fork", h: 104, strokes: s };
+    const label = pick(r, ["fork", "branch", "split", "reorg"]);
+    const s: Stroke[] = [...box(r, 2, 38, 18, 14), arrow(r, [21, 45], [27, 45]), ...box(r, 28, 38, 18, 14), arrow(r, [47, 42], [56, 26]), ...box(r, 57, 14, 22, 14), arrow(r, [47, 49], [56, 64]), ...box(r, 57, 58, 22, 14), ...write(r, label, mid(label, 0.9, 84), 98, 0.9)];
+    return { words: label, h: 104, strokes: s };
   },
 };
 const signature: Maker = {
   name: "signature",
   w: 84,
   make: (r) => {
-    const s: Stroke[] = [...write(r, "message", 4, 14, 0.8), arrow(r, [30, 20], [30, 34]), ...box(r, 6, 36, 48, 22), ...write(r, "sign", 13, 53, 0.85), arrow(r, [30, 60], [30, 76]), ...write(r, "signature", 2, 94, 0.72)];
-    return { words: "message sign signature", h: 102, strokes: s };
+    const top = pick(r, ["message", "payload", "data"]);
+    const act = pick(r, ["sign", "seal", "stamp"]);
+    const out = pick(r, ["signature", "proof", "stamp"]);
+    const s: Stroke[] = [...write(r, top, mid(top, 0.8, 60), 14, 0.8), arrow(r, [30, 20], [30, 34]), ...box(r, 6, 36, 48, 22), ...write(r, act, 6 + mid(act, 0.85, 48), 53, 0.85), arrow(r, [30, 60], [30, 76]), ...write(r, out, mid(out, 0.72, 60), 94, 0.72)];
+    return { words: `${top} ${act} ${out}`, h: 102, strokes: s };
   },
 };
 const pipeline: Maker = {
   name: "pipeline",
   w: 84,
   make: (r) => {
-    const labels = ["mempool", "block", "chain"];
+    const labels = pick(r, [["mempool", "block", "chain"], ["queue", "batch", "block"], ["input", "state", "output"], ["pending", "block", "final"]]);
     const s: Stroke[] = [];
     labels.forEach((t, i) => {
       s.push(...box(r, 4, 4 + i * 38, 76, 24));
-      s.push(...write(r, t, 12, 22 + i * 38, 0.8));
+      s.push(...write(r, t, mid(t, 0.8, 84), 22 + i * 38, 0.8));
       if (i < 2) s.push(arrow(r, [42, 30 + i * 38], [42, 42 + i * 38]));
     });
     return { words: labels.join(" "), h: 108, strokes: s };
@@ -240,18 +251,21 @@ const genesis: Maker = {
   name: "genesis",
   w: 84,
   make: (r) => {
-    const s: Stroke[] = [...box(r, 4, 4, 76, 26), ...write(r, "genesis", 10, 23, 0.85), arrow(r, [42, 31], [42, 46]), ...box(r, 4, 48, 76, 26), ...write(r, "...", 32, 66, 1.1)];
-    return { words: "genesis", h: 78, strokes: s };
+    const label = pick(r, ["genesis", "block 0", "origin", "root"]);
+    const s: Stroke[] = [...box(r, 4, 4, 76, 26), ...write(r, label, mid(label, 0.85, 84), 23, 0.85), arrow(r, [42, 31], [42, 46]), ...box(r, 4, 48, 76, 26), ...write(r, "...", 32, 66, 1.1)];
+    return { words: label, h: 78, strokes: s };
   },
 };
 const merkle: Maker = {
   name: "merkle",
   w: 108,
   make: (r) => {
-    const s: Stroke[] = [...write(r, "merkle root", 8, 12, 0.8), ring(r, 54, 26, 6, 6), line(r, [52, 32], [32, 46]), line(r, [56, 32], [76, 46]), ring(r, 30, 52, 6, 6), ring(r, 78, 52, 6, 6), line(r, [28, 58], [18, 82]), line(r, [32, 58], [42, 82]), line(r, [76, 58], [66, 82]), line(r, [80, 58], [90, 82])];
+    const top = pick(r, ["merkle root", "state root", "tx root"]);
+    const leaves = pick(r, ["leaves", "txs", "hashes"]);
+    const s: Stroke[] = [...write(r, top, mid(top, 0.8, 108), 12, 0.8), ring(r, 54, 26, 6, 6), line(r, [52, 32], [32, 46]), line(r, [56, 32], [76, 46]), ring(r, 30, 52, 6, 6), ring(r, 78, 52, 6, 6), line(r, [28, 58], [18, 82]), line(r, [32, 58], [42, 82]), line(r, [76, 58], [66, 82]), line(r, [80, 58], [90, 82])];
     for (const x of [13, 37, 61, 85]) s.push(...box(r, x, 83, 10, 10));
-    s.push(...write(r, "leaves", 32, 114, 0.85));
-    return { words: "merkle root leaves", h: 122, strokes: s };
+    s.push(...write(r, leaves, mid(leaves, 0.85, 108), 114, 0.85));
+    return { words: `${top} ${leaves}`, h: 122, strokes: s };
   },
 };
 const header: Maker = {
@@ -271,9 +285,12 @@ const links: Maker = {
   name: "links",
   w: 108,
   make: (r) => {
-    const s: Stroke[] = [18, 42, 66, 90].map((x) => ring(r, x, 24, 12, 8));
-    s.push(...write(r, "ledger", 22, 58, 0.85));
-    return { words: "ledger", h: 66, strokes: s };
+    const label = pick(r, ["ledger", "log", "journal", "record"]);
+    const count = 3 + (r() < 0.5 ? 1 : 0);
+    const first = count === 4 ? 18 : 30;
+    const s: Stroke[] = Array.from({ length: count }, (_, i) => ring(r, first + i * 24, 24, 12, 8));
+    s.push(...write(r, label, mid(label, 0.85, 108), 58, 0.85));
+    return { words: label, h: 66, strokes: s };
   },
 };
 /** Two or three words from the vocabulary, each marked in its own way: underline, wave, circle, arrow. */
