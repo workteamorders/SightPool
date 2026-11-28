@@ -791,40 +791,7 @@
     pointer-events: none;
   }
   .sketch-slot {
-    display: none;
     position: absolute;
-    width: 108px;
-    height: 132px;
-  }
-  .sketch-slot[data-side="left"] {
-    left: 76px;
-    width: 84px;
-  }
-  .sketch-slot[data-side="right"] {
-    right: 36px;
-  }
-  @media (min-width: 90rem) {
-    .sketch-slot {
-      display: block;
-    }
-  }
-  /* inner columns: against the content edge (the content is 1096px wide and centred), where very wide screens leave room */
-  .sketch-slot[data-col="inner"] {
-    display: none;
-  }
-  .sketch-slot[data-col="inner"][data-side="left"] {
-    left: auto;
-    right: calc(50% + 560px);
-  }
-  .sketch-slot[data-col="inner"][data-side="right"] {
-    right: auto;
-    left: calc(50% + 560px);
-    width: 108px;
-  }
-  @media (min-width: 115rem) {
-    .sketch-slot[data-col="inner"] {
-      display: block;
-    }
   }
   .sketch {
     position: absolute;
@@ -863,7 +830,6 @@
   .sketch[data-phase="draw"] path {
     animation: sp-draw var(--t) ease-in-out var(--d) both;
   }
-  .sk-eraser,
   .sk-smudge {
     opacity: 0;
   }
@@ -887,22 +853,29 @@
     fill: var(--manila);
     stroke: none;
   }
-  .sketch[data-phase="wipe"] .sk-reveal {
-    animation: sp-reveal 2.6s ease-in-out forwards;
+  .sk-wipe {
+    transform-box: fill-box;
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+  }
+  .sk-eraser {
+    opacity: 0;
+  }
+  .sketch[data-phase="wipe"] .sk-wipe {
+    animation: sp-wipe var(--t) linear var(--d) forwards;
   }
   .sketch[data-phase="wipe"] .sk-eraser {
-    opacity: 1;
     animation:
-      sp-reveal 2.6s ease-in-out forwards,
-      sp-eraser-out 0.6s ease-in 2.6s forwards;
+      sp-pass var(--t) linear var(--d) both,
+      sp-blink var(--t) linear var(--d) both;
   }
   .sketch[data-phase="wipe"] .sk-smudge {
     opacity: 1;
   }
   /* after the wipe the ink is gone and the smudge is whole; with the next drawing it fades away underneath */
-  .sketch[data-phase="ghost"] .sk-reveal,
-  .sketch[data-phase="fade"] .sk-reveal {
-    transform: translateX(var(--run));
+  .sketch[data-phase="ghost"] .sk-wipe,
+  .sketch[data-phase="fade"] .sk-wipe {
+    transform: scaleX(1);
   }
   .sketch[data-phase="ghost"] .sk-ink,
   .sketch[data-phase="fade"] .sk-ink {
@@ -1254,13 +1227,28 @@
       opacity: var(--o, 1);
     }
   }
-  @keyframes sp-reveal {
+  @keyframes sp-wipe {
+    to {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes sp-pass {
+    from {
+      transform: translateX(0);
+    }
     to {
       transform: translateX(var(--run));
     }
   }
-  @keyframes sp-eraser-out {
-    to {
+  @keyframes sp-blink {
+    0% {
+      opacity: 0;
+    }
+    4%,
+    96% {
+      opacity: 1;
+    }
+    100% {
       opacity: 0;
     }
   }
