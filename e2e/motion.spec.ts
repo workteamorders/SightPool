@@ -149,7 +149,7 @@ test.describe("always-moving details", () => {
 test.describe("chalk drawings", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test("hands write at random free places in the margins, something different each time, stroke by stroke, then an eraser wipes it band by band", async ({ page }) => {
+  test("hands write at random free places in the margins, something different each time, stroke by stroke, then an eraser scrubs it away", async ({ page }) => {
     await page.addInitScript(() => {
       const seen: string[] = [];
       (window as unknown as { __seen: string[] }).__seen = seen;
@@ -195,21 +195,25 @@ test.describe("chalk drawings", () => {
     const offsets = () => drawing.locator("path").evaluateAll((ps) => ps.map((p) => parseFloat(getComputedStyle(p).strokeDashoffset)));
     const early = await offsets();
     expect(early[early.length - 1]!).toBeGreaterThan(0.99);
-    // a long run: the eraser wipes in bands from the top, left to right in each
+    // a long run: the eraser scrubs the drawing away with many short slanted strokes, up and down, moving on from the left
     let wiped = false;
     for (let i = 0; i < 40; i++) {
       await page.clock.runFor(1000);
       if (await page.locator('.sketch[data-phase="wipe"] .sk-eraser').count()) {
         wiped = true;
         const wiping = page.locator('.sketch[data-phase="wipe"]').first();
-        expect(await wiping.locator(".sk-eraser").first().evaluate((e) => getComputedStyle(e).animationName)).toContain("sp-pass");
-        const delays = await wiping.locator("mask").first().locator(".sk-wipe").evaluateAll((els) => els.map((e) => parseFloat(getComputedStyle(e).animationDelay)));
-        const ys = await wiping.locator("mask").first().locator(".sk-wipe").evaluateAll((els) => els.map((e) => parseFloat(e.getAttribute("y") ?? "0")));
-        expect(delays.length).toBeGreaterThanOrEqual(3);
+        expect(await wiping.locator(".sk-eraser").first().evaluate((e) => e.getAnimations().length)).toBeGreaterThan(0);
+        const strips = wiping.locator("mask").first().locator(".sk-scrub");
+        const delays = await strips.evaluateAll((els) => els.map((e) => parseFloat(getComputedStyle(e).animationDelay)));
+        const dirs = await strips.evaluateAll((els) => els.map((e) => e.classList.contains("up")));
+        expect(delays.length).toBeGreaterThanOrEqual(9);
         for (let k = 1; k < delays.length; k++) {
-          expect(delays[k]!).toBeGreaterThan(delays[k - 1]!); // each band starts after the one above
-          expect(ys[k]!).toBeGreaterThan(ys[k - 1]!); // and lies below it
+          expect(delays[k]!).toBeGreaterThan(delays[k - 1]!); // each stroke starts after the one before
+          expect(dirs[k]).not.toBe(dirs[k - 1]); // down, then up, then down
         }
+        expect(dirs[0]).toBe(false); // the first goes down from the top
+        expect(dirs[dirs.length - 1]).toBe(false); // so the last ends at the bottom right
+        expect(await strips.first().evaluate((e) => getComputedStyle(e).animationName)).toBe("sp-scrub");
         break;
       }
     }

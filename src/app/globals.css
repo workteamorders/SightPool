@@ -853,29 +853,30 @@
     fill: var(--manila);
     stroke: none;
   }
-  .sk-wipe {
+  .sk-scrub {
     transform-box: fill-box;
-    transform-origin: 0 50%;
-    transform: scaleX(0);
+    transform-origin: 50% 0;
+    transform: scaleY(0);
+  }
+  .sk-scrub.up {
+    transform-origin: 50% 100%;
   }
   .sk-eraser {
     opacity: 0;
   }
-  .sketch[data-phase="wipe"] .sk-wipe {
-    animation: sp-wipe var(--t) linear var(--d) forwards;
+  .sketch[data-phase="wipe"] .sk-scrub {
+    animation: sp-scrub 0.17s linear var(--d) forwards;
   }
   .sketch[data-phase="wipe"] .sk-eraser {
-    animation:
-      sp-pass var(--t) linear var(--d) both,
-      sp-blink var(--t) linear var(--d) both;
+    opacity: 1;
   }
   .sketch[data-phase="wipe"] .sk-smudge {
     opacity: 1;
   }
   /* after the wipe the ink is gone and the smudge is whole; with the next drawing it fades away underneath */
-  .sketch[data-phase="ghost"] .sk-wipe,
-  .sketch[data-phase="fade"] .sk-wipe {
-    transform: scaleX(1);
+  .sketch[data-phase="ghost"] .sk-scrub,
+  .sketch[data-phase="fade"] .sk-scrub {
+    transform: scaleY(1);
   }
   .sketch[data-phase="ghost"] .sk-ink,
   .sketch[data-phase="fade"] .sk-ink {
@@ -1227,29 +1228,9 @@
       opacity: var(--o, 1);
     }
   }
-  @keyframes sp-wipe {
+  @keyframes sp-scrub {
     to {
-      transform: scaleX(1);
-    }
-  }
-  @keyframes sp-pass {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(var(--run));
-    }
-  }
-  @keyframes sp-blink {
-    0% {
-      opacity: 0;
-    }
-    4%,
-    96% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 0;
+      transform: scaleY(1);
     }
   }
   @keyframes sp-smudge-fade {

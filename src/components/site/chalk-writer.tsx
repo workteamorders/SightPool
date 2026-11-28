@@ -7,8 +7,8 @@ import { type Art, pickArt } from "@/lib/chalk-art";
  * boxes that page-margins.tsx lays down. While a slot is on screen it runs a loop:
  *   draw   a new drawing, stroke by stroke, each word letter by letter (CSS does the drawing, from --d and --t),
  *   hold   the finished drawing stays for a while,
- *   wipe   a board eraser wipes it in rows, from the top left to the bottom right: it sweeps left to right along one
- *          band, comes back to the left edge, and sweeps the next band down, the chalk disappearing behind it,
+ *   wipe   a board eraser scrubs it away with many short slanted strokes, up and down, while the scrubbing moves on
+ *          diagonally from the top left to the bottom right, the chalk disappearing behind it,
  *   ghost  what an eraser leaves: a powdery smudge along the old strokes and broad streaks where it passed,
  *   fade   the next drawing is chosen (never the same kind twice in a row, always with different words, a different
  *          hand, different wobble) and is written right over the smudge, which fades away underneath.
@@ -19,8 +19,11 @@ import { type Art, pickArt } from "@/lib/chalk-art";
 const NS = "http://www.w3.org/2000/svg";
 const PAD = 6;
 const SPEED = 95; // px of chalk per second along a shape
-const PASS = 0.6; // seconds the eraser takes for one band, left to right
-const ROW = 22; // px height of one band
+const SLANT = Math.tan((28 * Math.PI) / 180); // the scrubbing strokes lean like "/"
+const STRIP = 6.5; // px between one scrubbing stroke and the next, along x
+const STEP = 0.14; // seconds from the start of one scrubbing stroke to the start of the next
+const STROKE = 0.17; // seconds one stroke takes, up or down
+const erasing = new WeakMap<SVGSVGElement, Keyframe[]>(); // where the eraser goes, per drawing
 const FADE = 7500; // how long the old smudge stays under the next drawing
 
 let counter = 0;
@@ -40,50 +43,61 @@ function build(art: Art): SVGSVGElement {
   svg.dataset.art = art.name;
   svg.dataset.words = art.words;
 
-  // The wipe goes in bands from the top. In each band a rect grows from the left edge: black in the ink mask (the chalk
-  // goes), white in the cover mask (the smudge appears where the chalk was). Each band has its own start (--d).
-  const rows = Math.max(3, Math.min(8, Math.round(h / ROW)));
-  const rowH = h / rows;
-  svg.dataset.wipe = String(Math.round((rows * PASS + 0.7) * 1000));
-  svg.style.setProperty("--run", `${w}px`);
-  svg.style.setProperty("--t", `${PASS}s`);
+  // The wipe is many short strokes, each a slanted strip across the whole drawing that grows from one end (up, then
+  // down, then up...) while the strips themselves move on from the left. In each strip a rect grows: black in the ink
+  // mask (the chalk goes), white in the cover mask (the smudge appears where the chalk was). Each has its own start (--d).
+  const reach = (h - 2 * PAD) * SLANT;
+  let n = Math.max(9, Math.round((w + reach) / STRIP));
+  if (n % 2 === 0) n += 1; // an odd count: the first stroke goes down from the top left, the last ends at the bottom right
+  const pitch = (w + reach) / n;
+  svg.dataset.wipe = String(Math.round((n * STEP + STROKE + 0.7) * 1000));
+  svg.dataset.erase = String(Math.round((n * STEP + 0.3) * 1000)); // how long the eraser itself travels
   const mask = svgEl("mask", { id, maskUnits: "userSpaceOnUse", x: -PAD, y: -PAD, width: w, height: h });
   mask.append(svgEl("rect", { x: -PAD, y: -PAD, width: w, height: h, fill: "#fff" }));
   const cover = svgEl("mask", { id: `${id}s`, maskUnits: "userSpaceOnUse", x: -PAD, y: -PAD, width: w, height: h });
-  const eraser = svgEl("g", { class: "sk-erasers" });
-  for (let i = 0; i < rows; i++) {
-    const y = -PAD + i * rowH;
-    const d = `${(0.15 + i * PASS).toFixed(2)}s`;
+  const keys: Keyframe[] = [];
+  const midY = -PAD + h / 2;
+  for (let i = 0; i < n; i++) {
+    const cx = -PAD - reach / 2 + (i + 0.5) * pitch;
+    const down = i % 2 === 0;
+    const d = `${(0.15 + i * STEP).toFixed(3)}s`;
     for (const [m, fill] of [[mask, "#000"], [cover, "#fff"]] as const) {
-      const r = svgEl("rect", { class: "sk-wipe", x: -PAD, y: y - 0.5, width: w, height: rowH + 1, fill });
+      const g = svgEl("g", { transform: `translate(${cx.toFixed(1)} ${midY.toFixed(1)}) skewX(-28)` });
+      const r = svgEl("rect", { class: down ? "sk-scrub" : "sk-scrub up", x: (-pitch * 0.9).toFixed(1), y: -h / 2 - 1, width: (pitch * 1.8).toFixed(1), height: h + 2, fill });
       r.style.setProperty("--d", d);
-      m.append(r);
+      g.append(r);
+      m.append(g);
     }
-    // the eraser for this band: a felt block with a wooden back, riding at the edge of the wiped part
-    const e = svgEl("g", { class: "sk-eraser" });
-    e.style.setProperty("--d", d);
-    const tilt = svgEl("g", { transform: `rotate(${(Math.random() * 6 - 3).toFixed(1)} ${-PAD} ${(y + rowH / 2).toFixed(1)})` });
-    tilt.append(
-      svgEl("rect", { class: "eraser-felt", x: -PAD - 11, y: y - 1, width: 22, height: rowH + 2, rx: 3 }),
-      svgEl("rect", { class: "eraser-wood", x: -PAD - 13, y: y - 1, width: 6, height: rowH + 2, rx: 2 }),
-    );
-    e.append(tilt);
-    eraser.append(e);
+    // the eraser's way: the top end of a stroke leans right, the bottom end left
+    const top = [cx + reach / 2, -PAD + 4];
+    const bottom = [cx - reach / 2, -PAD + h - 4];
+    const [from, to] = down ? [top, bottom] : [bottom, top];
+    // one point per stroke, so the times only ever go forward: it starts at the top left, then every stroke ends where the next one begins
+    const total = n * STEP + 0.3;
+    if (i === 0) keys.push({ offset: 0.15 / total, transform: `translate(${from[0]!.toFixed(1)}px, ${from[1]!.toFixed(1)}px)` });
+    keys.push({ offset: Math.min(1, (0.15 + (i + 1) * STEP) / total), transform: `translate(${to[0]!.toFixed(1)}px, ${to[1]!.toFixed(1)}px)` });
   }
+  erasing.set(svg, keys);
+  // the eraser: a felt block with a wooden back, leaning with the strokes
+  const eraser = svgEl("g", { class: "sk-eraser" });
+  const block = svgEl("g", { transform: "rotate(-62)" });
+  block.append(
+    svgEl("rect", { class: "eraser-felt", x: -13, y: -7, width: 26, height: 14, rx: 3 }),
+    svgEl("rect", { class: "eraser-wood", x: -13, y: -7, width: 7, height: 14, rx: 2 }),
+  );
+  eraser.append(block);
   const defs = svgEl("defs");
   defs.append(mask, cover);
   svg.append(defs);
   const smudge = svgEl("g", { class: "sk-smudge", mask: `url(#${id}s)` });
   svg.append(smudge);
 
-  // a broad streak along each band, where the eraser passed: wider than the strokes and uneven, so the board looks wiped, not clean
-  for (let i = 0; i < rows; i++) {
-    const y = -PAD + (i + 0.5) * rowH + (Math.random() - 0.5) * 3;
-    const x0 = -PAD + Math.random() * w * 0.2;
-    const x1 = -PAD + w * (0.7 + Math.random() * 0.3);
-    const bend = (Math.random() - 0.5) * 4;
-    const streak = svgEl("path", { class: "streak", d: `M${x0.toFixed(1)} ${y.toFixed(1)} Q${((x0 + x1) / 2).toFixed(1)} ${(y + bend).toFixed(1)} ${x1.toFixed(1)} ${(y + bend / 2).toFixed(1)}` });
-    streak.style.strokeWidth = `${(rowH * (0.45 + Math.random() * 0.35)).toFixed(1)}px`;
+  // broad streaks along the strokes, where the eraser went: wider than the chalk and uneven, so the board looks wiped, not clean
+  for (let i = 0, k = 4 + Math.floor(Math.random() * 4); i < k; i++) {
+    const cx = -PAD - reach / 2 + Math.random() * (w + reach);
+    const bend = (Math.random() - 0.5) * 8;
+    const streak = svgEl("path", { class: "streak", d: `M${(cx - reach / 2).toFixed(1)} ${(-PAD + h - 3).toFixed(1)} Q${(cx + bend).toFixed(1)} ${midY.toFixed(1)} ${(cx + reach / 2).toFixed(1)} ${(-PAD + 3).toFixed(1)}` });
+    streak.style.strokeWidth = `${(5 + Math.random() * 6).toFixed(1)}px`;
     smudge.append(streak);
   }
 
@@ -205,7 +219,9 @@ export function ChalkWriter() {
       later(hand, Number(svg.dataset.total) * 1000 + 300, () => {
         delete svg.dataset.phase; // finished, at rest
         later(hand, 2500 + Math.random() * 3500, () => {
-          svg.dataset.phase = "wipe"; // the eraser goes over it band by band
+          svg.dataset.phase = "wipe"; // the eraser scrubs it away, stroke after stroke
+          const keys = erasing.get(svg);
+          if (keys) svg.querySelector(".sk-eraser")?.animate(keys, { duration: Number(svg.dataset.erase), easing: "linear", fill: "both" });
           later(hand, Number(svg.dataset.wipe), () => {
             svg.dataset.phase = "ghost"; // the chalk dust stays where the drawing was
             later(hand, 2000 + Math.random() * 3000, () => {
