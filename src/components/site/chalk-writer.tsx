@@ -45,7 +45,7 @@ function build(art: Art): SVGSVGElement {
   // down, then up...) while the strips themselves move on from the left. In each strip a rect grows: black in the ink
   // mask (the chalk goes), white in the cover mask (the smudge appears where the chalk was). Each has its own start (--d).
   // every drawing has its own clock
-  const step0 = 0.045 + Math.random() * 0.04; // seconds from the start of one scrubbing stroke to the start of the next
+  const step0 = 0.06 + Math.random() * 0.045; // seconds from the start of one scrubbing stroke to the start of the next
   const strip = 5.5 + Math.random() * 2.5; // px between one scrubbing stroke and the next, along x
   const fade = 3500 + Math.random() * 3000; // ms the dust stays visible after the wipe
   svg.style.setProperty("--fade", `${(fade / 1000).toFixed(2)}s`);
@@ -60,7 +60,7 @@ function build(art: Art): SVGSVGElement {
   if (n % 2 === 0) n += 1; // an odd count: the first stroke goes down from the top left, the last ends at the bottom right
   const pitch = (aw + 20 + reach) / n;
   // a wide drawing is scrubbed faster still: the whole wipe has its own limit
-  const step = Math.min(step0, (1 + Math.random()) / n);
+  const step = Math.min(step0, (1.3 + Math.random() * 0.9) / n);
   const stroke = step * (1.15 + Math.random() * 0.3); // seconds one stroke takes, up or down
   svg.style.setProperty("--st", `${stroke.toFixed(3)}s`);
   svg.dataset.wipe = String(Math.round((n * step + stroke + 0.3) * 1000));
@@ -289,7 +289,7 @@ export function ChalkWriter() {
       box.querySelectorAll(".sketch-slot").forEach((e) => e.remove());
     };
 
-    const count = () => (window.innerWidth >= 1840 ? 22 : window.innerWidth >= 1440 ? 16 : 10);
+    const count = () => (window.innerWidth >= 1840 ? 17 : window.innerWidth >= 1440 ? 12 : 8);
     /** Motion off: finished drawings at random places on the screen, no cycle. */
     const scatter = () => {
       const g = geometry();
